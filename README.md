@@ -1,4 +1,4 @@
 # CS2_Final_Project
 Final Project for C002 JAMAL 
 
-No clue what it is yet tho. 
+Connect 4 with an AI and possible GUI later.
