@@ -1,15 +1,14 @@
-// color your text in Windows console mode
-// colors are 0=black 1=blue 2=green and so on to 15=white  
-// colorattribute = foreground + background * 16
-// to get red text on yellow use 4 + 14*16 = 228
-// light red on yellow would be 12 + 14*16 = 236
-// a Dev-C++ tested console application by  vegaseat  07nov2004
 #include <iostream>
 #include <windows.h>   // WinApi header
 #include <iomanip>
 #include <cstdlib>
+#include <string>
 
-using namespace std;    // std::cout, std::cin
+using namespace std;   
+
+void PrintBoard(string board[][7]);
+
+void PutChip(string board[][7]);
 
 int main()
 {
@@ -20,21 +19,35 @@ int main()
 	// you can loop k higher to see more color choices
 	// pick the colorattribute k you want
 
+	// Color
 	k = 12; // red = 12 
 	k = 14; // yellow = 14
 
 	SetConsoleTextAttribute(hConsole, k);
 
-	char board[6][7] =
+	// TODO change board size to const
+	string board[6][7] =
 	{
-		{'o','o','o','o','o','o','o'},
-		{'o','o','o','o','o','o','o'},
-		{'o','o','o','o','o','o','o'},
-		{'o','o','o','o','o','o','o'},
-		{'o','o','o','o','o','o','o'},
-		{'o','o','o','o','o','o','o'}
+		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
 	};
 
+	while (true /*!EndGame()*/) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+	{
+		PrintBoard(board);
+
+		PutChip(board);
+	}
+
+	return 0;
+}
+
+void PrintBoard(string board[][7])
+{
 	for (int i = 0; i < 6; i++)
 	{
 		for (int j = 0; j < 7; j++)
@@ -45,7 +58,33 @@ int main()
 				cout << board[i][j] << " ";
 		}
 	}
+	cout << endl;
+}
 
-	return 0;
+// TODO May need another character for the chip for the bot. 
+
+void PutChip(string board[][7]) // May be reused for the bot
+{
+	int column_pick; 
+	cout << "Which column would you like? (1-7): ";
+	cin >> column_pick;
+	cout << endl;
+
+	column_pick--; // index starts at 0
+
+	for (int i = 6; i > 0; i--)
+	{
+		if (board[i][column_pick] == "[ ]")
+		{
+			board[i][column_pick] = "[O]";
+			break;
+		}
+	}
+
+}
+
+bool EndGame(string board[][7])
+{
+	return true;
 }
 
