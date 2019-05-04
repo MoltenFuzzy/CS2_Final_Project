@@ -7,13 +7,17 @@
 
 using namespace std;   
 
-void PrintBoard(string board[][7]);
+void PrintBoard(const string board[][7]);
 
-void BOT(string board[6][7]);
+bool EndGame(const string board[][7], bool& player_win);
+
+void BOT(string board[][7]);
 
 void PutChip(string board[][7], string chip, bool player = true);
 
-bool isColumnFull(string board[][7], int column_pick);
+void BOTAI(string board[][7], int &column_pick);
+
+bool isColumnFull(const string board[][7], int column_pick);
 
 const int GREEN = 10; 
 const int YELLOW = 14;
@@ -27,7 +31,8 @@ int main()
 	srand((unsigned)time(NULL));
 
 	HANDLE hConsole;
-	int k;
+	
+	//int k;
 
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	// you can loop k higher to see more color choices
@@ -44,7 +49,11 @@ int main()
 		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
 	};
 
-	while (true /*!EndGame()*/) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+	bool player_won;
+
+	// While it is not end of game, continue looping.
+	// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
+	while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
 	{
 		SetConsoleTextAttribute(hConsole, YELLOW);
 		PrintBoard(board);
@@ -58,12 +67,22 @@ int main()
 		// Bot that will play against player
 		SetConsoleTextAttribute(hConsole, GREEN);
 		BOT(board);
+
 	}
+
+	SetConsoleTextAttribute(hConsole, RED);
+	if (player_won)
+		cout << setw(20) << setfill(' ') << "You won!\n\n";
+	else
+		cout << setw(20) << setfill(' ') << "You lost!\n\n";
+
+	SetConsoleTextAttribute(hConsole, YELLOW);
+	PrintBoard(board);
 
 	return 0;
 }
 
-void PrintBoard(string board[][7])
+void PrintBoard(const string board[][7])
 {
 	for (int i = 0; i < 6; i++)
 	{
@@ -80,23 +99,23 @@ void PrintBoard(string board[][7])
 
 // TODO May need another character for the chip for the bot. 
 
-void PutChip(string board[][7], string chip, bool player) // May be reused for the bot
+void PutChip(string board[][7], string chip, bool isPlayer) // May be reused for the bot
 {
 	int column_pick = rand() % 7 + 1;
 
-	if (player)
+	if (isPlayer)
 	{
 		cout << "Which column would you like? (1-7): ";
 		cin >> column_pick;
 		while (column_pick > 7 || column_pick < 1)
 		{
-			cout << "Column does not exist!\n";
+			cout << "\nColumn does not exist!\n\n";
 			cout << "Which column would you like? (1-7): ";
 			cin >> column_pick;
 		}
 		while (isColumnFull(board, column_pick))
 		{
-			cout << "Column is full!\n";
+			cout << "\nColumn is full!\n\n";
 			cout << "Which column would you like? (1-7): ";
 			cin >> column_pick;
 		}
@@ -104,11 +123,7 @@ void PutChip(string board[][7], string chip, bool player) // May be reused for t
 	else
 	{
 		// Want to loop until the column picked is not full
-		while (isColumnFull(board, column_pick))
-		{
-			column_pick = rand() % 7 + 1;
-		}
-		cout << "Bot chooses column " << column_pick << endl;
+		BOTAI(board, column_pick);
 	}
 
 	cout << endl;
@@ -126,18 +141,109 @@ void PutChip(string board[][7], string chip, bool player) // May be reused for t
 
 }
 
-void BOT(string board[6][7])
+void BOTAI(string board[][7], int &column_pick)
+{
+	while (isColumnFull(board, column_pick))
+	{
+		column_pick = rand() % 7 + 1;
+	}
+	cout << "Bot chooses column " << column_pick << endl;
+}
+
+void BOT(string board[][7])
 {
 	PutChip(board, BOTCHIP, false);
 }
 
-bool EndGame(string board[][7])
+// TODO return by referrence if the player wins or bot wins
+// HACK BUG: registers win even if its not 4 in a row
+bool EndGame(const string board[][7], bool& player_win)
 {
-	//for(board[])
-	return true;
+	int row_Ochipcount = 0;
+	int row_0chipcount = 0;
+
+	// Counts Horizontal Chips for each player
+	// HACK make sure they are next to each other, not just there are 4 in the row/column
+
+	// Why does this work for decremeting, but when incrementing it does not count the others [ ][ ][ ][O][O][O][O]
+
+	for (int row = 5; row >= 0; row--)
+	{
+		for (int col = 6; col >= 0; col--)
+		{
+			if (board[row][col] == "[O]")
+				row_Ochipcount++;
+
+			else if (board[row][col] == "[0]" || board[row][col] == "[ ]")
+			{
+				if (row_Ochipcount >= 4)
+				{
+					player_win = true;
+					return true; // Someone has won, return true
+				}
+				else 
+					row_Ochipcount = 0;
+			}
+
+			if (board[row][col] == "[0]")
+				row_0chipcount++;
+
+			else if (board[row][col] == "[O]" || board[row][col] == "[ ]")
+			{
+				if (row_0chipcount >= 4)
+				{
+					player_win = false;
+					return true; // Someone has won, return true
+				}
+				else
+					row_0chipcount = 0;
+			}
+		}
+	}
+
+	// Counts Vertical Chips for each player
+
+	for (int col = 5; col >= 0; col--)
+	{
+		for (int row = 6; row >= 0; row--)
+		{
+			if (board[row][col] == "[O]")
+				row_Ochipcount++;
+
+			else if (board[row][col] == "[0]" || board[row][col] == "[ ]")
+			{
+				if (row_Ochipcount >= 4)
+				{
+					player_win = true;
+					return true; // Someone has won, return true
+				}
+				else
+					row_Ochipcount = 0;
+			}
+
+			if (board[row][col] == "[0]")
+				row_0chipcount++;
+
+			else if (board[row][col] == "[O]" || board[row][col] == "[ ]")
+			{
+				if (row_0chipcount >= 4)
+				{
+					player_win = false;
+					return true; // Someone has won, return true
+				}
+				else
+					row_0chipcount = 0;
+			}
+		}
+	}
+
+	// Counts Diagonal Chips for each player
+	
+
+	return false;
 }
 
-bool isColumnFull(string board[][7], int column_pick)
+bool isColumnFull(const string board[][7], int column_pick)
 {
 	int count = 0;
 	
