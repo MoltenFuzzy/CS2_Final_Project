@@ -7,6 +7,8 @@
 
 using namespace std;   
 
+// TODO add coin flip for who goes first
+
 void PrintBoard(const string board[][7]);
 
 bool EndGame(const string board[][7], bool& player_win);
@@ -28,7 +30,7 @@ const string BOTCHIP = "[0]";
 
 int main()
 {
-	srand((unsigned)time(NULL));
+	srand((unsigned)time(NULL)); // Delete later after BOTAI functionality is added
 
 	HANDLE hConsole;
 	
@@ -64,6 +66,10 @@ int main()
 		SetConsoleTextAttribute(hConsole, YELLOW);
 		PrintBoard(board);
 
+		// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
+		if (EndGame(board, player_won))
+			break;
+
 		// Bot that will play against player
 		SetConsoleTextAttribute(hConsole, GREEN);
 		BOT(board);
@@ -72,9 +78,9 @@ int main()
 
 	SetConsoleTextAttribute(hConsole, RED);
 	if (player_won)
-		cout << setw(20) << setfill(' ') << "You won!\n\n";
+		cout << setw(17) << setfill(' ') << "You won!\n\n";
 	else
-		cout << setw(20) << setfill(' ') << "You lost!\n\n";
+		cout << setw(17) << setfill(' ') << "You lost!\n\n";
 
 	SetConsoleTextAttribute(hConsole, YELLOW);
 	PrintBoard(board);
@@ -91,7 +97,7 @@ void PrintBoard(const string board[][7])
 			if (j == 6)
 				cout << board[i][j] << endl;
 			else
-				cout << board[i][j] << " ";
+				cout << board[i][j];
 		}
 	}
 	cout << endl;
@@ -238,7 +244,74 @@ bool EndGame(const string board[][7], bool& player_win)
 	}
 
 	// Counts Diagonal Chips for each player
-	
+	for (int col = 5; col >= 0; col--)
+	{
+		for (int row = 6; row >= 0; row--)
+		{
+			if (board[row][col] == "[O]")
+				row_Ochipcount++;
+
+			else if (board[row][col] == "[0]" || board[row][col] == "[ ]")
+			{
+				if (row_Ochipcount >= 4)
+				{
+					player_win = true;
+					return true; // Someone has won, return true
+				}
+				else
+					row_Ochipcount = 0;
+			}
+
+			if (board[row][col] == "[0]")
+				row_0chipcount++;
+
+			else if (board[row][col] == "[O]" || board[row][col] == "[ ]")
+			{
+				if (row_0chipcount >= 4)
+				{
+					player_win = false;
+					return true; // Someone has won, return true
+				}
+				else
+					row_0chipcount = 0;
+			}
+		}
+	}
+
+	for (int col = 5; col >= 0; col--)
+	{
+		for (int row = 6; row >= 0; row--)
+		{
+			if (board[row][col] == "[O]")
+				row_Ochipcount++;
+
+			else if (board[row][col] == "[0]" || board[row][col] == "[ ]")
+			{
+				if (row_Ochipcount >= 4)
+				{
+					player_win = true;
+					return true; // Someone has won, return true
+				}
+				else
+					row_Ochipcount = 0;
+			}
+
+			if (board[row][col] == "[0]")
+				row_0chipcount++;
+
+			else if (board[row][col] == "[O]" || board[row][col] == "[ ]")
+			{
+				if (row_0chipcount >= 4)
+				{
+					player_win = false;
+					return true; // Someone has won, return true
+				}
+				else
+					row_0chipcount = 0;
+			}
+		}
+	}
+
 
 	return false;
 }
