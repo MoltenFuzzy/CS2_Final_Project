@@ -25,6 +25,8 @@ const int GREEN = 10;
 const int YELLOW = 14;
 const int RED = 12;
 
+// TODO Replace all instances of [O] & [0] with there respective constants
+
 const string PLAYERCHIP = "[O]";
 const string BOTCHIP = "[0]";
 
@@ -163,6 +165,7 @@ void BOT(string board[][7])
 
 // TODO return by referrence if the player wins or bot wins
 // HACK BUG: registers win even if its not 4 in a row
+// TODO imporve the loop as running multiple loops is not efficient
 bool EndGame(const string board[][7], bool& player_win)
 {
 	int row_Ochipcount = 0;
@@ -209,9 +212,9 @@ bool EndGame(const string board[][7], bool& player_win)
 
 	// Counts Vertical Chips for each player
 
-	for (int col = 5; col >= 0; col--)
+	for (int col = 6; col >= 0; col--)
 	{
-		for (int row = 6; row >= 0; row--)
+		for (int row = 7; row >= 0; row--)
 		{
 			if (board[row][col] == "[O]")
 				row_Ochipcount++;
@@ -244,75 +247,99 @@ bool EndGame(const string board[][7], bool& player_win)
 	}
 
 	// Counts Diagonal Chips for each player
-	for (int col = 5; col >= 0; col--)
+	// From left side
+	for (int row = 5; row >= 0; row--)
 	{
-		for (int row = 6; row >= 0; row--)
+		for (int col = 6; col >= 0; col--)
 		{
-			if (board[row][col] == "[O]")
-				row_Ochipcount++;
-
-			else if (board[row][col] == "[0]" || board[row][col] == "[ ]")
+			if (row > 2 && col >= 3)
 			{
+				if (board[row][col] == "[O]")
+					row_Ochipcount++;
+				if (board[row - 1][col - 1] == "[O]")
+					row_Ochipcount++;
+				if (board[row - 2][col - 2] == "[O]")
+					row_Ochipcount++;
+				if (board[row - 3][col - 3] == "[O]")
+					row_Ochipcount++;
 				if (row_Ochipcount >= 4)
 				{
 					player_win = true;
 					return true; // Someone has won, return true
 				}
 				else
+				{
 					row_Ochipcount = 0;
-			}
+				}
 
-			if (board[row][col] == "[0]")
-				row_0chipcount++;
-
-			else if (board[row][col] == "[O]" || board[row][col] == "[ ]")
-			{
+				if (board[row][col] == "[0]")
+					row_0chipcount++;
+				if (board[row - 1][col - 1] == "[0]")
+					row_0chipcount++;
+				if (board[row - 2][col - 2] == "[0]")
+					row_0chipcount++;
+				if (board[row - 3][col - 3] == "[0]")
+					row_0chipcount++;
 				if (row_0chipcount >= 4)
 				{
 					player_win = false;
 					return true; // Someone has won, return true
 				}
 				else
+				{
 					row_0chipcount = 0;
+				}
 			}
 		}
 	}
 
-	for (int col = 5; col >= 0; col--)
+	// From Right side
+	for (int row = 5; row >= 0; row--)
 	{
-		for (int row = 6; row >= 0; row--)
+		for (int col = 0; col < 7; col++)
 		{
-			if (board[row][col] == "[O]")
-				row_Ochipcount++;
-
-			else if (board[row][col] == "[0]" || board[row][col] == "[ ]")
+			if (row > 2 && col <= 3)
 			{
+				if (board[row][col] == "[O]")
+					row_Ochipcount++;
+				if (board[row - 1][col + 1] == "[O]")
+					row_Ochipcount++;
+				if (board[row - 2][col + 2] == "[O]")
+					row_Ochipcount++;
+				if (board[row - 3][col + 3] == "[O]")
+					row_Ochipcount++;
 				if (row_Ochipcount >= 4)
 				{
 					player_win = true;
 					return true; // Someone has won, return true
 				}
 				else
+				{
 					row_Ochipcount = 0;
-			}
+				}
 
-			if (board[row][col] == "[0]")
-				row_0chipcount++;
-
-			else if (board[row][col] == "[O]" || board[row][col] == "[ ]")
-			{
+				if (board[row][col] == "[0]")
+					row_0chipcount++;
+				if (board[row - 1][col + 1] == "[0]")
+					row_0chipcount++;
+				if (board[row - 2][col + 2] == "[0]")
+					row_0chipcount++;
+				if (board[row - 3][col + 3] == "[0]")
+					row_0chipcount++;
 				if (row_0chipcount >= 4)
 				{
 					player_win = false;
 					return true; // Someone has won, return true
 				}
 				else
+				{
 					row_0chipcount = 0;
+				}
 			}
 		}
 	}
 
-
+	// Default
 	return false;
 }
 
