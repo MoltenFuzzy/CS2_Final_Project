@@ -9,7 +9,11 @@ using namespace std;
 
 // TODO add coin flip for who goes first
 
-void PrintBoard(const string board[][7]);
+void PrintBoard(const string board[][7], HANDLE& hConsole);
+
+void StartGame(string  board[6][7], bool &player_won, HANDLE &hConsole);
+
+void DeclareWinner(const HANDLE &hConsole, bool player_won);
 
 bool EndGame(const string board[][7], bool& player_win);
 
@@ -28,7 +32,7 @@ const int RED = 12;
 // TODO Replace all instances of [O] & [0] with there respective constants
 
 const string PLAYERCHIP = "[O]";
-const string BOTCHIP = "[0]";
+const string BOTCHIP = "[X]";
 
 int main()
 {
@@ -57,16 +61,37 @@ int main()
 
 	// While it is not end of game, continue looping.
 	// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
+	StartGame(board, player_won, hConsole);
+
+	DeclareWinner(hConsole, player_won);
+
+	SetConsoleTextAttribute(hConsole, YELLOW);
+	PrintBoard(board, hConsole);
+
+	return 0;
+}
+
+void DeclareWinner(const HANDLE &hConsole, bool player_won)
+{
+	SetConsoleTextAttribute(hConsole, GREEN);
+	if (player_won)
+		cout << setw(17) << setfill(' ') << "You won!\n\n";
+	else
+		cout << setw(17) << setfill(' ') << "You lost!\n\n";
+}
+
+void StartGame(string  board[6][7], bool &player_won, HANDLE &hConsole)
+{
 	while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
 	{
 		SetConsoleTextAttribute(hConsole, YELLOW);
-		PrintBoard(board);
+		PrintBoard(board, hConsole);
 
 		SetConsoleTextAttribute(hConsole, GREEN);
 		PutChip(board, PLAYERCHIP);
 
 		SetConsoleTextAttribute(hConsole, YELLOW);
-		PrintBoard(board);
+		PrintBoard(board, hConsole);
 
 		// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
 		if (EndGame(board, player_won))
@@ -77,21 +102,14 @@ int main()
 		BOT(board);
 
 	}
-
-	SetConsoleTextAttribute(hConsole, RED);
-	if (player_won)
-		cout << setw(17) << setfill(' ') << "You won!\n\n";
-	else
-		cout << setw(17) << setfill(' ') << "You lost!\n\n";
-
-	SetConsoleTextAttribute(hConsole, YELLOW);
-	PrintBoard(board);
-
-	return 0;
 }
 
-void PrintBoard(const string board[][7])
+void PrintBoard(const string board[][7], HANDLE& hConsole)
 {
+	SetConsoleTextAttribute(hConsole, RED);
+	cout << " 1 " << " 2 " << " 3 " << " 4 " << " 5 " << " 6 " << " 7 \n";
+
+	SetConsoleTextAttribute(hConsole, YELLOW);
 	for (int i = 0; i < 6; i++)
 	{
 		for (int j = 0; j < 7; j++)
@@ -180,10 +198,10 @@ bool EndGame(const string board[][7], bool& player_win)
 	{
 		for (int col = 6; col >= 0; col--)
 		{
-			if (board[row][col] == "[O]")
+			if (board[row][col] == PLAYERCHIP)
 				row_Ochipcount++;
 
-			else if (board[row][col] == "[0]" || board[row][col] == "[ ]")
+			else if (board[row][col] == BOTCHIP || board[row][col] == "[ ]")
 			{
 				if (row_Ochipcount >= 4)
 				{
@@ -194,10 +212,10 @@ bool EndGame(const string board[][7], bool& player_win)
 					row_Ochipcount = 0;
 			}
 
-			if (board[row][col] == "[0]")
+			if (board[row][col] == BOTCHIP)
 				row_0chipcount++;
 
-			else if (board[row][col] == "[O]" || board[row][col] == "[ ]")
+			else if (board[row][col] == PLAYERCHIP || board[row][col] == "[ ]")
 			{
 				if (row_0chipcount >= 4)
 				{
@@ -216,10 +234,10 @@ bool EndGame(const string board[][7], bool& player_win)
 	{
 		for (int row = 7; row >= 0; row--)
 		{
-			if (board[row][col] == "[O]")
+			if (board[row][col] == PLAYERCHIP)
 				row_Ochipcount++;
 
-			else if (board[row][col] == "[0]" || board[row][col] == "[ ]")
+			else if (board[row][col] == BOTCHIP || board[row][col] == "[ ]")
 			{
 				if (row_Ochipcount >= 4)
 				{
@@ -230,10 +248,10 @@ bool EndGame(const string board[][7], bool& player_win)
 					row_Ochipcount = 0;
 			}
 
-			if (board[row][col] == "[0]")
+			if (board[row][col] == BOTCHIP)
 				row_0chipcount++;
 
-			else if (board[row][col] == "[O]" || board[row][col] == "[ ]")
+			else if (board[row][col] == PLAYERCHIP || board[row][col] == "[ ]")
 			{
 				if (row_0chipcount >= 4)
 				{
@@ -254,13 +272,13 @@ bool EndGame(const string board[][7], bool& player_win)
 		{
 			if (row > 2 && col >= 3)
 			{
-				if (board[row][col] == "[O]")
+				if (board[row][col] == PLAYERCHIP)
 					row_Ochipcount++;
-				if (board[row - 1][col - 1] == "[O]")
+				if (board[row - 1][col - 1] == PLAYERCHIP)
 					row_Ochipcount++;
-				if (board[row - 2][col - 2] == "[O]")
+				if (board[row - 2][col - 2] == PLAYERCHIP)
 					row_Ochipcount++;
-				if (board[row - 3][col - 3] == "[O]")
+				if (board[row - 3][col - 3] == PLAYERCHIP)
 					row_Ochipcount++;
 				if (row_Ochipcount >= 4)
 				{
@@ -272,13 +290,13 @@ bool EndGame(const string board[][7], bool& player_win)
 					row_Ochipcount = 0;
 				}
 
-				if (board[row][col] == "[0]")
+				if (board[row][col] == BOTCHIP)
 					row_0chipcount++;
-				if (board[row - 1][col - 1] == "[0]")
+				if (board[row - 1][col - 1] == BOTCHIP)
 					row_0chipcount++;
-				if (board[row - 2][col - 2] == "[0]")
+				if (board[row - 2][col - 2] == BOTCHIP)
 					row_0chipcount++;
-				if (board[row - 3][col - 3] == "[0]")
+				if (board[row - 3][col - 3] == BOTCHIP)
 					row_0chipcount++;
 				if (row_0chipcount >= 4)
 				{
@@ -300,13 +318,13 @@ bool EndGame(const string board[][7], bool& player_win)
 		{
 			if (row > 2 && col <= 3)
 			{
-				if (board[row][col] == "[O]")
+				if (board[row][col] == PLAYERCHIP)
 					row_Ochipcount++;
-				if (board[row - 1][col + 1] == "[O]")
+				if (board[row - 1][col + 1] == PLAYERCHIP)
 					row_Ochipcount++;
-				if (board[row - 2][col + 2] == "[O]")
+				if (board[row - 2][col + 2] == PLAYERCHIP)
 					row_Ochipcount++;
-				if (board[row - 3][col + 3] == "[O]")
+				if (board[row - 3][col + 3] == PLAYERCHIP)
 					row_Ochipcount++;
 				if (row_Ochipcount >= 4)
 				{
@@ -318,13 +336,13 @@ bool EndGame(const string board[][7], bool& player_win)
 					row_Ochipcount = 0;
 				}
 
-				if (board[row][col] == "[0]")
+				if (board[row][col] == BOTCHIP)
 					row_0chipcount++;
-				if (board[row - 1][col + 1] == "[0]")
+				if (board[row - 1][col + 1] == BOTCHIP)
 					row_0chipcount++;
-				if (board[row - 2][col + 2] == "[0]")
+				if (board[row - 2][col + 2] == BOTCHIP)
 					row_0chipcount++;
-				if (board[row - 3][col + 3] == "[0]")
+				if (board[row - 3][col + 3] == BOTCHIP)
 					row_0chipcount++;
 				if (row_0chipcount >= 4)
 				{
