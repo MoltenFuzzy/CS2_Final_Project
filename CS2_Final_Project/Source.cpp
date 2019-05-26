@@ -414,7 +414,6 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 		}
 	}
 
-	// Default
 	return false;
 }
 
