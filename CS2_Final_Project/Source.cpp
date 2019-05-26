@@ -224,7 +224,7 @@ void BOTAI(char board[][MAX_COL], int &column_pick)
 	{
 		column_pick = rand() % MAX_COL + 1;
 	}
-	cout << "Bot chooses column " << column_pick << endl;
+	//cout << "Bot chooses column " << column_pick << endl;
 }
 
 void BOT(char board[][MAX_COL])
