@@ -10,34 +10,41 @@ using namespace std;
 // TODO add coin flip for who goes first
 // TODO change the board to 2d char array
 
-void PrintBoard(const string board[][7], HANDLE& hConsole);
+const int MAX_ROW = 6;
+const int MAX_COL = 7;
 
-void StartGame(string board[6][7], bool &player_won, HANDLE &hConsole);
+void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole);
+
+void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole);
 
 void DeclareWinner(const HANDLE &hConsole, bool player_won);
 
-bool EndGame(const string board[][7], bool& player_win);
+bool EndGame(const char board[][MAX_COL], bool& player_win);
 
-void BOT(string board[][7]);
+void BOT(char board[][MAX_COL]);
 
-void PutChip(string board[][7], string chip, bool player = true);
+void PutChip(char board[][MAX_COL], char chip, bool player = true);
 
-void BOTAI(string board[][7], int &column_pick);
+void BOTAI(char board[][MAX_COL], int &column_pick);
 
-bool isColumnFull(const string board[][7], int column_pick);
+bool isColumnFull(const char board[][MAX_COL], int column_pick);
 
 void clrscr();
+
+void fillA(char a[MAX_ROW][MAX_COL], char ch);
 
 bool RunAgain();
 
 const int GREEN = 10; 
 const int YELLOW = 14;
 const int RED = 12;
+const int BLUE = 9;
+const int WHITE = 15;
 
 // TODO Replace all instances of [O] & [0] with there respective constants
 
-const string PLAYERCHIP = "[O]";
-const string BOTCHIP = "[X]";
+const char PLAYERCHIP = 'O';
+const char BOTCHIP = '0';
 
 int main()
 {
@@ -54,15 +61,9 @@ int main()
 	{
 		clrscr(); // To clear the screen at the beginning of each game
 
-		string board[6][7] =
-		{
-			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-		};
+		char board[MAX_ROW][MAX_COL] = {};
+
+		fillA(board, ' ');
 
 		bool player_won;
 
@@ -75,8 +76,9 @@ int main()
 
 		DeclareWinner(hConsole, player_won);
 
-		SetConsoleTextAttribute(hConsole, YELLOW);
 		PrintBoard(board, hConsole);
+
+		SetConsoleTextAttribute(hConsole, WHITE);
 
 	} while (RunAgain());
 
@@ -92,7 +94,7 @@ void DeclareWinner(const HANDLE &hConsole, bool player_won)
 		cout << setw(17) << setfill(' ') << "You lost!\n\n";
 }
 
-void StartGame(string board[6][7], bool &player_won, HANDLE &hConsole)
+void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
 {
 	while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
 	{
@@ -118,21 +120,55 @@ void StartGame(string board[6][7], bool &player_won, HANDLE &hConsole)
 	}
 }
 
-void PrintBoard(const string board[][7], HANDLE& hConsole)
+void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole)
 {
 	SetConsoleTextAttribute(hConsole, RED);
 	// Column indicators
 	cout << " 1 " << " 2 " << " 3 " << " 4 " << " 5 " << " 6 " << " 7 \n";
 
-	SetConsoleTextAttribute(hConsole, YELLOW);
+	SetConsoleTextAttribute(hConsole, BLUE);
 	for (int i = 0; i < 6; i++)
 	{
 		for (int j = 0; j < 7; j++)
 		{
 			if (j == 6)
-				cout << board[i][j] << endl;
+			{
+				if (board[i][j] == PLAYERCHIP)
+				{
+					cout << "[";
+					SetConsoleTextAttribute(hConsole, RED);
+					cout << board[i][j];
+					SetConsoleTextAttribute(hConsole, BLUE);
+					cout << "]\n";
+				}
+				else
+				{
+					cout << "[";
+					SetConsoleTextAttribute(hConsole, YELLOW);
+					cout << board[i][j];
+					SetConsoleTextAttribute(hConsole, BLUE);
+					cout << "]\n";
+				}
+			}
 			else
-				cout << board[i][j];
+			{
+				if (board[i][j] == PLAYERCHIP)
+				{
+					cout << "[";
+					SetConsoleTextAttribute(hConsole, RED);
+					cout << board[i][j];
+					SetConsoleTextAttribute(hConsole, BLUE);
+					cout << "]";
+				}
+				else
+				{
+					cout << "[";
+					SetConsoleTextAttribute(hConsole, YELLOW);
+					cout << board[i][j];
+					SetConsoleTextAttribute(hConsole, BLUE);
+					cout << "]";
+				}
+			}
 		}
 	}
 	cout << endl;
@@ -140,7 +176,7 @@ void PrintBoard(const string board[][7], HANDLE& hConsole)
 
 // TODO May need another character for the chip for the bot. 
 
-void PutChip(string board[][7], string chip, bool isPlayer) // May be reused for the bot
+void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused for the bot
 {
 	int column_pick = rand() % 7 + 1;
 
@@ -173,7 +209,7 @@ void PutChip(string board[][7], string chip, bool isPlayer) // May be reused for
 
 	for (int i = 5; i >= 0; i--)
 	{
-		if (board[i][column_pick] == "[ ]")
+		if (board[i][column_pick] == ' ')
 		{
 			board[i][column_pick] = chip;
 			break;
@@ -182,16 +218,16 @@ void PutChip(string board[][7], string chip, bool isPlayer) // May be reused for
 
 }
 
-void BOTAI(string board[][7], int &column_pick)
+void BOTAI(char board[][MAX_COL], int &column_pick)
 {
 	while (isColumnFull(board, column_pick))
 	{
-		column_pick = rand() % 7 + 1;
+		column_pick = rand() % MAX_COL + 1;
 	}
 	cout << "Bot chooses column " << column_pick << endl;
 }
 
-void BOT(string board[][7])
+void BOT(char board[][MAX_COL])
 {
 	PutChip(board, BOTCHIP, false);
 }
@@ -199,7 +235,7 @@ void BOT(string board[][7])
 // TODO return by referrence if the player wins or bot wins
 // HACK BUG: registers win even if its not 4 in a row // (I think this has been fixed)
 // TODO imporve the loop as running multiple loops is not efficient
-bool EndGame(const string board[][7], bool& player_win)
+bool EndGame(const char board[][MAX_COL], bool& player_win)
 {
 	int row_Ochipcount = 0;
 	int row_0chipcount = 0;
@@ -209,14 +245,14 @@ bool EndGame(const string board[][7], bool& player_win)
 
 	// Why does this work for decremeting, but when incrementing it does not count the others [ ][ ][ ][O][O][O][O]
 
-	for (int row = 5; row >= 0; row--)
+	for (int row = MAX_ROW - 1; row >= 0; row--) // TODO used to be just 7 and not 7-1
 	{
-		for (int col = 6; col >= 0; col--)
+		for (int col = MAX_COL - 1; col >= 0; col--)
 		{
 			if (board[row][col] == PLAYERCHIP)
 				row_Ochipcount++;
 
-			else if (board[row][col] == BOTCHIP || board[row][col] == "[ ]")
+			else if (board[row][col] == BOTCHIP || board[row][col] == ' ')
 			{
 				if (row_Ochipcount >= 4)
 				{
@@ -230,7 +266,7 @@ bool EndGame(const string board[][7], bool& player_win)
 			if (board[row][col] == BOTCHIP)
 				row_0chipcount++;
 
-			else if (board[row][col] == PLAYERCHIP || board[row][col] == "[ ]")
+			else if (board[row][col] == PLAYERCHIP || board[row][col] == ' ')
 			{
 				if (row_0chipcount >= 4)
 				{
@@ -252,7 +288,7 @@ bool EndGame(const string board[][7], bool& player_win)
 			if (board[row][col] == PLAYERCHIP)
 				row_Ochipcount++;
 
-			else if (board[row][col] == BOTCHIP || board[row][col] == "[ ]")
+			else if (board[row][col] == BOTCHIP || board[row][col] == ' ')
 			{
 				if (row_Ochipcount >= 4)
 				{
@@ -266,7 +302,7 @@ bool EndGame(const string board[][7], bool& player_win)
 			if (board[row][col] == BOTCHIP)
 				row_0chipcount++;
 
-			else if (board[row][col] == PLAYERCHIP || board[row][col] == "[ ]")
+			else if (board[row][col] == PLAYERCHIP || board[row][col] == ' ')
 			{
 				if (row_0chipcount >= 4)
 				{
@@ -331,9 +367,9 @@ bool EndGame(const string board[][7], bool& player_win)
 
 	// TODO: Could I clean this up?
 	// From Right side
-	for (int row = 5; row >= 0; row--)
+	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
-		for (int col = 0; col < 7; col++)
+		for (int col = 0; col < MAX_COL; col++)
 		{
 			if (row > 2 && col <= 3)
 			{
@@ -382,7 +418,7 @@ bool EndGame(const string board[][7], bool& player_win)
 	return false;
 }
 
-bool isColumnFull(const string board[][7], int column_pick)
+bool isColumnFull(const char board[][MAX_COL], int column_pick)
 {
 	int count = 0;
 	
@@ -390,7 +426,7 @@ bool isColumnFull(const string board[][7], int column_pick)
 
 	for (int i = 0; i < 6; i++)
 	{
-		if (board[i][column_pick] != "[ ]")
+		if (board[i][column_pick] != ' ')
 		{
 			count++; 
 		}
@@ -402,10 +438,17 @@ bool isColumnFull(const string board[][7], int column_pick)
 		return false;
 }
 
+void fillA(char a[MAX_ROW][MAX_COL], char ch)
+{
+	for (int i = 0; i < MAX_ROW; i++)
+		for (int j = 0; j < MAX_COL; j++)
+			a[i][j] = ch;
+}
+
 bool RunAgain()
 {
 	cin.ignore();
-	cout << "\nWould you like to play again?(Y/N): ";
+	cout << "Would you like to play again?(Y/N): ";
 	string ans; 
 	getline(cin, ans);
 
