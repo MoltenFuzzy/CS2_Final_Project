@@ -1,3 +1,7 @@
+/*
+Name: Kent Phan
+*/
+
 #include <iostream>
 #include <windows.h>   // WinApi header
 #include <iomanip>
@@ -199,7 +203,7 @@ void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused f
 	}
 	else
 	{
-		// Want to loop until the column picked is not full
+		// Want to loop until the column picked is not full 
 		BOTAI(board, column_pick);
 	}
 
