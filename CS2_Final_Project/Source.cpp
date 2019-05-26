@@ -8,10 +8,11 @@
 using namespace std;   
 
 // TODO add coin flip for who goes first
+// TODO change the board to 2d char array
 
 void PrintBoard(const string board[][7], HANDLE& hConsole);
 
-void StartGame(string  board[6][7], bool &player_won, HANDLE &hConsole);
+void StartGame(string board[6][7], bool &player_won, HANDLE &hConsole);
 
 void DeclareWinner(const HANDLE &hConsole, bool player_won);
 
@@ -24,6 +25,10 @@ void PutChip(string board[][7], string chip, bool player = true);
 void BOTAI(string board[][7], int &column_pick);
 
 bool isColumnFull(const string board[][7], int column_pick);
+
+void clrscr();
+
+bool RunAgain();
 
 const int GREEN = 10; 
 const int YELLOW = 14;
@@ -39,34 +44,41 @@ int main()
 	srand((unsigned)time(NULL)); // Delete later after BOTAI functionality is added
 
 	HANDLE hConsole;
-	
-	//int k;
 
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	// you can loop k higher to see more color choices
 	// pick the colorattribute k you want
 
 	// TODO change board size to const
-	string board[6][7] =
+	do
 	{
-		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-		{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
-	};
+		clrscr(); // To clear the screen at the beginning of each game
 
-	bool player_won;
+		string board[6][7] =
+		{
+			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+			{"[ ]","[ ]","[ ]","[ ]","[ ]","[ ]","[ ]"},
+		};
 
-	// While it is not end of game, continue looping.
-	// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
-	StartGame(board, player_won, hConsole);
+		bool player_won;
 
-	DeclareWinner(hConsole, player_won);
+		// While it is not end of game, continue looping.
+		// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
 
-	SetConsoleTextAttribute(hConsole, YELLOW);
-	PrintBoard(board, hConsole);
+		StartGame(board, player_won, hConsole);
+
+		clrscr();
+
+		DeclareWinner(hConsole, player_won);
+
+		SetConsoleTextAttribute(hConsole, YELLOW);
+		PrintBoard(board, hConsole);
+
+	} while (RunAgain());
 
 	return 0;
 }
@@ -80,7 +92,7 @@ void DeclareWinner(const HANDLE &hConsole, bool player_won)
 		cout << setw(17) << setfill(' ') << "You lost!\n\n";
 }
 
-void StartGame(string  board[6][7], bool &player_won, HANDLE &hConsole)
+void StartGame(string board[6][7], bool &player_won, HANDLE &hConsole)
 {
 	while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
 	{
@@ -101,12 +113,15 @@ void StartGame(string  board[6][7], bool &player_won, HANDLE &hConsole)
 		SetConsoleTextAttribute(hConsole, GREEN);
 		BOT(board);
 
+		clrscr(); // clears console screen
+
 	}
 }
 
 void PrintBoard(const string board[][7], HANDLE& hConsole)
 {
 	SetConsoleTextAttribute(hConsole, RED);
+	// Column indicators
 	cout << " 1 " << " 2 " << " 3 " << " 4 " << " 5 " << " 6 " << " 7 \n";
 
 	SetConsoleTextAttribute(hConsole, YELLOW);
@@ -182,7 +197,7 @@ void BOT(string board[][7])
 }
 
 // TODO return by referrence if the player wins or bot wins
-// HACK BUG: registers win even if its not 4 in a row
+// HACK BUG: registers win even if its not 4 in a row // (I think this has been fixed)
 // TODO imporve the loop as running multiple loops is not efficient
 bool EndGame(const string board[][7], bool& player_win)
 {
@@ -266,12 +281,14 @@ bool EndGame(const string board[][7], bool& player_win)
 
 	// Counts Diagonal Chips for each player
 	// From left side
+	// TODO: Could I clean this up?
 	for (int row = 5; row >= 0; row--)
 	{
 		for (int col = 6; col >= 0; col--)
 		{
 			if (row > 2 && col >= 3)
 			{
+				// TODO: Could I clean this up?
 				if (board[row][col] == PLAYERCHIP)
 					row_Ochipcount++;
 				if (board[row - 1][col - 1] == PLAYERCHIP)
@@ -290,6 +307,7 @@ bool EndGame(const string board[][7], bool& player_win)
 					row_Ochipcount = 0;
 				}
 
+				// TODO: Could I clean this up?
 				if (board[row][col] == BOTCHIP)
 					row_0chipcount++;
 				if (board[row - 1][col - 1] == BOTCHIP)
@@ -311,6 +329,7 @@ bool EndGame(const string board[][7], bool& player_win)
 		}
 	}
 
+	// TODO: Could I clean this up?
 	// From Right side
 	for (int row = 5; row >= 0; row--)
 	{
@@ -318,6 +337,7 @@ bool EndGame(const string board[][7], bool& player_win)
 		{
 			if (row > 2 && col <= 3)
 			{
+				// TODO: Could I clean this up?
 				if (board[row][col] == PLAYERCHIP)
 					row_Ochipcount++;
 				if (board[row - 1][col + 1] == PLAYERCHIP)
@@ -336,6 +356,7 @@ bool EndGame(const string board[][7], bool& player_win)
 					row_Ochipcount = 0;
 				}
 
+				// TODO: Could I clean this up?
 				if (board[row][col] == BOTCHIP)
 					row_0chipcount++;
 				if (board[row - 1][col + 1] == BOTCHIP)
@@ -381,3 +402,52 @@ bool isColumnFull(const string board[][7], int column_pick)
 		return false;
 }
 
+bool RunAgain()
+{
+	cin.ignore();
+	cout << "\nWould you like to play again?(Y/N): ";
+	string ans; 
+	getline(cin, ans);
+
+	cout << endl;
+
+	return (tolower(ans[0]) == 'y');
+}
+
+// Taken from http://www.cplusplus.com/forum/articles/10515/
+void clrscr()
+{
+	HANDLE                     hStdOut;
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	DWORD                      count;
+	DWORD                      cellCount;
+	COORD                      homeCoords = { 0, 0 };
+
+	hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hStdOut == INVALID_HANDLE_VALUE) return;
+
+	/* Get the number of cells in the current buffer */
+	if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) return;
+	cellCount = csbi.dwSize.X *csbi.dwSize.Y;
+
+	/* Fill the entire buffer with spaces */
+	if (!FillConsoleOutputCharacter(
+		hStdOut,
+		(TCHAR) ' ',
+		cellCount,
+		homeCoords,
+		&count
+	)) return;
+
+	/* Fill the entire buffer with the current colors and attributes */
+	if (!FillConsoleOutputAttribute(
+		hStdOut,
+		csbi.wAttributes,
+		cellCount,
+		homeCoords,
+		&count
+	)) return;
+
+	/* Move the cursor home */
+	SetConsoleCursorPosition(hStdOut, homeCoords);
+}
