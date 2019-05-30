@@ -63,7 +63,7 @@ int main()
 	// TODO change board size to const
 	do
 	{
-		clrscr(); // To clear the screen at the beginning of each game
+		//clrscr(); // To clear the screen at the beginning of each game
 
 		char board[MAX_ROW][MAX_COL] = {};
 
@@ -74,9 +74,11 @@ int main()
 		// While it is not end of game, continue looping.
 		// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
 
+		// TODO: add difficulty selection for AI
+
 		StartGame(board, player_won, hConsole);
 
-		clrscr();
+		//clrscr();
 
 		DeclareWinner(hConsole, player_won);
 
@@ -119,7 +121,7 @@ void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
 		SetConsoleTextAttribute(hConsole, GREEN);
 		BOT(board);
 
-		clrscr(); // clears console screen
+		//clrscr(); // clears console screen
 
 	}
 }
@@ -224,10 +226,14 @@ void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused f
 
 void BOTAI(char board[][MAX_COL], int &column_pick)
 {
-	while (isColumnFull(board, column_pick))
-	{
-		column_pick = rand() % MAX_COL + 1;
-	}
+	//while (isColumnFull(board, column_pick))
+	//{
+	//	column_pick = rand() % MAX_COL + 1;
+	//}
+
+
+
+
 	//cout << "Bot chooses column " << column_pick << endl;
 }
 
@@ -285,9 +291,9 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 
 	// Counts Vertical Chips for each player
 
-	for (int col = 6; col >= 0; col--)
+	for (int col = MAX_COL - 1; col >= 0; col--)
 	{
-		for (int row = 7; row >= 0; row--)
+		for (int row = MAX_ROW - 1; row >= 0; row--)
 		{
 			if (board[row][col] == PLAYERCHIP)
 				row_Ochipcount++;
@@ -321,14 +327,12 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 
 	// Counts Diagonal Chips for each player
 	// From left side
-	// TODO: Could I clean this up?
-	for (int row = 5; row >= 0; row--)
+	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
-		for (int col = 6; col >= 0; col--)
+		for (int col = MAX_COL - 1; col >= 0; col--)
 		{
 			if (row > 2 && col >= 3)
 			{
-				// TODO: Could I clean this up?
 				if (board[row][col] == PLAYERCHIP)
 					row_Ochipcount++;
 				if (board[row - 1][col - 1] == PLAYERCHIP)
@@ -340,6 +344,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 				if (row_Ochipcount >= 4)
 				{
 					player_win = true;
+					cout << "Won diagonally " << row_Ochipcount << endl;
 					return true; // Someone has won, return true
 				}
 				else
@@ -347,7 +352,6 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 					row_Ochipcount = 0;
 				}
 
-				// TODO: Could I clean this up?
 				if (board[row][col] == BOTCHIP)
 					row_0chipcount++;
 				if (board[row - 1][col - 1] == BOTCHIP)
@@ -359,6 +363,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 				if (row_0chipcount >= 4)
 				{
 					player_win = false;
+					cout << "Lost diagonally " << row_0chipcount << endl;
 					return true; // Someone has won, return true
 				}
 				else
@@ -369,8 +374,8 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 		}
 	}
 
-	// TODO: Could I clean this up?
 	// From Right side
+	// TODO: There is a bug in the diagonal count 
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
 		for (int col = 0; col < MAX_COL; col++)
@@ -389,6 +394,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 				if (row_Ochipcount >= 4)
 				{
 					player_win = true;
+					cout << "Won diagonally " << row_Ochipcount << endl;
 					return true; // Someone has won, return true
 				}
 				else
@@ -396,7 +402,6 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 					row_Ochipcount = 0;
 				}
 
-				// TODO: Could I clean this up?
 				if (board[row][col] == BOTCHIP)
 					row_0chipcount++;
 				if (board[row - 1][col + 1] == BOTCHIP)
@@ -408,6 +413,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 				if (row_0chipcount >= 4)
 				{
 					player_win = false;
+					cout << "Lost diagonally " << row_0chipcount << endl;
 					return true; // Someone has won, return true
 				}
 				else
