@@ -51,6 +51,7 @@ const int WHITE = 15;
 
 const char PLAYERCHIP = 'O';
 const char BOTCHIP = '0';
+const char BLANKSPACE = ' ';
 
 int main()
 {
@@ -65,11 +66,11 @@ int main()
 	// TODO change board size to const
 	do
 	{
-		//clrscr(); // To clear the screen at the beginning of each game
+		clrscr(); // To clear the screen at the beginning of each game
 
 		char board[MAX_ROW][MAX_COL] = {};
 
-		fillA(board, ' ');
+		fillA(board, BLANKSPACE);
 
 		bool player_won;
 
@@ -80,7 +81,7 @@ int main()
 
 		StartGame(board, player_won, hConsole);
 
-		//clrscr();
+		clrscr();
 
 		DeclareWinner(hConsole, player_won);
 
@@ -97,9 +98,9 @@ void DeclareWinner(const HANDLE &hConsole, bool player_won)
 {
 	SetConsoleTextAttribute(hConsole, GREEN);
 	if (player_won)
-		cout << setw(17) << setfill(' ') << "You won!\n\n";
+		cout << setw(17) << setfill(BLANKSPACE) << "You won!\n\n";
 	else
-		cout << setw(17) << setfill(' ') << "You lost!\n\n";
+		cout << setw(17) << setfill(BLANKSPACE) << "You lost!\n\n";
 }
 
 void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
@@ -123,7 +124,7 @@ void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
 		SetConsoleTextAttribute(hConsole, GREEN);
 		BOT(board);
 
-		//clrscr(); // clears console screen
+		clrscr(); // clears console screen
 
 	}
 }
@@ -132,7 +133,7 @@ void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole)
 {
 	SetConsoleTextAttribute(hConsole, RED);
 	// Column indicators
-	cout << " 1 " << " 2 " << " 3 " << " 4 " << " 5 " << " 6 " << " 7 \n";
+	cout << " 1  2  3  4  5  6  7 \n";
 
 	SetConsoleTextAttribute(hConsole, BLUE);
 	for (int i = 0; i < 6; i++)
@@ -217,7 +218,7 @@ void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused f
 
 	for (int i = MAX_ROW - 1; i >= 0; i--)
 	{
-		if (board[i][column_pick] == ' ')
+		if (board[i][column_pick] == BLANKSPACE)
 		{
 			board[i][column_pick] = chip;
 			break;
@@ -230,7 +231,7 @@ void BOTAI(char board[][MAX_COL], int &column_pick)
 {
 	do
 	{
-		column_pick = 1; // Create function that would return the column_pick using an algorithm
+		column_pick = Minimax(board); // Create function that would return the column_pick using an algorithm
 
 	} while(isColumnFull(board, column_pick));
 
@@ -262,7 +263,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 			if (board[row][col] == PLAYERCHIP)
 				row_Ochipcount++;
 
-			else if (board[row][col] == BOTCHIP || board[row][col] == ' ')
+			else if (board[row][col] == BOTCHIP || board[row][col] == BLANKSPACE)
 			{
 				if (row_Ochipcount >= 4)
 				{
@@ -276,7 +277,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 			if (board[row][col] == BOTCHIP)
 				row_0chipcount++;
 
-			else if (board[row][col] == PLAYERCHIP || board[row][col] == ' ')
+			else if (board[row][col] == PLAYERCHIP || board[row][col] == BLANKSPACE)
 			{
 				if (row_0chipcount >= 4)
 				{
@@ -298,7 +299,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 			if (board[row][col] == PLAYERCHIP)
 				row_Ochipcount++;
 
-			else if (board[row][col] == BOTCHIP || board[row][col] == ' ')
+			else if (board[row][col] == BOTCHIP || board[row][col] == BLANKSPACE)
 			{
 				if (row_Ochipcount >= 4)
 				{
@@ -312,7 +313,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 			if (board[row][col] == BOTCHIP)
 				row_0chipcount++;
 
-			else if (board[row][col] == PLAYERCHIP || board[row][col] == ' ')
+			else if (board[row][col] == PLAYERCHIP || board[row][col] == BLANKSPACE)
 			{
 				if (row_0chipcount >= 4)
 				{
@@ -435,7 +436,7 @@ bool isColumnFull(const char board[][MAX_COL], int column_pick)
 
 	for (int i = 0; i < 6; i++)
 	{
-		if (board[i][column_pick] != ' ')
+		if (board[i][column_pick] != BLANKSPACE)
 		{
 			count++; 
 		}
@@ -445,6 +446,11 @@ bool isColumnFull(const char board[][MAX_COL], int column_pick)
 		return true;
 	else
 		return false;
+}
+
+int Minimax(const char board[][MAX_COL])
+{
+	return 4;
 }
 
 void fillA(char a[MAX_ROW][MAX_COL], char ch)
