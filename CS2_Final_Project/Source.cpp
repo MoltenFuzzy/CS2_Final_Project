@@ -9,6 +9,7 @@ Name: Kent Phan
 #include <string>
 #include <cmath>
 #include <ctime>
+#include <vector>
 #include "Connect4.h"
 
 using namespace std;   
@@ -225,9 +226,10 @@ void BOTAI(char board[][MAX_COL], int &column_pick)
 {
 	do
 	{
-		bool player_won = false; 
 
-		column_pick = Minimax(board, 4, true, ); // Create function that would return the column_pick using an algorithm
+		//column_pick = Minimax(board, 4, true, ); // Create function that would return the column_pick using an algorithm
+
+		column_pick = BestCol(board);
 
 	} while(isColumnFull(board, column_pick));
 
@@ -245,9 +247,36 @@ bool isTermNode(const char board[][MAX_COL], bool player_won)
 	return (EndGame(board, player_won) || EndGame(board, player_won) /* add if board is full */);
 }
 
+int BestCol(const char board[][MAX_COL])
+{
+	vector<int> scores_v(7);
+
+	if (board[MAX_ROW - 1][3] == BLANKSPACE)
+		return 4; 
+
+
+	// Add score algorithm +2 +4 +1000 etc
+
+
+	// Returns largest element's index
+	// This works
+	int max_index = 0;
+
+	for (int i = 0; i < scores_v.size(); i++)
+	{ 
+		if (scores_v.at(i) > scores_v.at(max_index))
+		{
+			max_index = i;
+		}
+	}
+
+	return max_index + 1; // Turns index into the column 0-6 to 1-7
+}
+
 int Minimax(char board[][MAX_COL], int depth, bool MaximizingPlayer, bool player_won)
 {
 	bool isTerm = isTermNode(board, player_won);
+
 	if (depth == 0 || isTerm /* add if board is full */)
 	{
 		if (isTerm)
@@ -271,8 +300,6 @@ int Minimax(char board[][MAX_COL], int depth, bool MaximizingPlayer, bool player
 			int value = -INFINITY; 
 
 			int i = 0;
-			
-			while(isColumnFull())
 
 		}
 

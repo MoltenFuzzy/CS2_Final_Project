@@ -39,6 +39,8 @@ bool isColumnFull(const char board[][MAX_COL], int column_pick);
 
 int Minimax(const char board[][MAX_COL], int depth, bool MaximizingPlayer);
 
+int BestCol(const char board[][MAX_COL]);
+
 bool isBoardFull(const char board[][MAX_COL]);
 
 void clrscr();
