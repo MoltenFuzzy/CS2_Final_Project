@@ -7,50 +7,15 @@ Name: Kent Phan
 #include <iomanip>
 #include <cstdlib>
 #include <string>
-#include <ctime> // Testing for AI, TODO delete later
+#include <cmath>
+#include <ctime>
+#include "Connect4.h"
 
 using namespace std;   
 
 // TODO add coin flip for who goes first
 // TODO change the board to 2d char array
 
-const int MAX_ROW = 6;
-const int MAX_COL = 7;
-
-void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole);
-
-void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole);
-
-void DeclareWinner(const HANDLE &hConsole, bool player_won);
-
-bool EndGame(const char board[][MAX_COL], bool& player_win);
-
-void BOT(char board[][MAX_COL]);
-
-void PutChip(char board[][MAX_COL], char chip, bool player = true);
-
-void BOTAI(char board[][MAX_COL], int &column_pick);
-
-bool isColumnFull(const char board[][MAX_COL], int column_pick);
-
-int Minimax(const char board[][MAX_COL]);
-
-void clrscr();
-
-void fillA(char a[MAX_ROW][MAX_COL], char ch);
-
-bool RunAgain();
-
-const int GREEN = 10; 
-const int YELLOW = 14;
-const int RED = 12;
-const int BLUE = 9;
-const int WHITE = 15;
-
-// TODO Replace all instances of [O] & [0] with there respective constants
-
-const char PLAYERCHIP = 'O';
-const char BOTCHIP = '0';
 
 int main()
 {
@@ -65,22 +30,22 @@ int main()
 	// TODO change board size to const
 	do
 	{
-		//clrscr(); // To clear the screen at the beginning of each game
+		clrscr(); // To clear the screen at the beginning of each game
 
 		char board[MAX_ROW][MAX_COL] = {};
 
-		fillA(board, ' ');
+		fillA(board, BLANKSPACE);
 
 		bool player_won;
 
 		// While it is not end of game, continue looping.
 		// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
 
-		// TODO: add difficulty selection for AI
+		// TODO: add difficulty selection for AI, this will correspond to the depth/ how far the AI will look down the tree
 
 		StartGame(board, player_won, hConsole);
 
-		//clrscr();
+		clrscr();
 
 		DeclareWinner(hConsole, player_won);
 
@@ -97,34 +62,64 @@ void DeclareWinner(const HANDLE &hConsole, bool player_won)
 {
 	SetConsoleTextAttribute(hConsole, GREEN);
 	if (player_won)
-		cout << setw(17) << setfill(' ') << "You won!\n\n";
+		cout << setw(17) << setfill(BLANKSPACE) << "You won!\n\n";
 	else
-		cout << setw(17) << setfill(' ') << "You lost!\n\n";
+		cout << setw(17) << setfill(BLANKSPACE) << "You lost!\n\n";
 }
 
 void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
 {
-	while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+
+	// rand range = 0 to 1; if % 2 + 1, then 1 to 2
+	bool chance = rand() % 2; // Switching starting player
+
+	if (chance)
 	{
-		SetConsoleTextAttribute(hConsole, YELLOW);
-		PrintBoard(board, hConsole);
+		while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+		{
+			SetConsoleTextAttribute(hConsole, YELLOW);
+			PrintBoard(board, hConsole);
 
-		SetConsoleTextAttribute(hConsole, GREEN);
-		PutChip(board, PLAYERCHIP);
+			SetConsoleTextAttribute(hConsole, GREEN);
+			PutChip(board, PLAYERCHIP);
 
-		SetConsoleTextAttribute(hConsole, YELLOW);
-		PrintBoard(board, hConsole);
+			SetConsoleTextAttribute(hConsole, YELLOW);
+			PrintBoard(board, hConsole);
 
-		// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
-		if (EndGame(board, player_won))
-			break;
+			// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
+			if (EndGame(board, player_won))
+				break;
 
-		// Bot that will play against player
-		SetConsoleTextAttribute(hConsole, GREEN);
-		BOT(board);
+			// Bot that will play against player
+			SetConsoleTextAttribute(hConsole, GREEN);
+			BOT(board);
 
-		//clrscr(); // clears console screen
+			clrscr(); // clears console screen
 
+		}
+	}
+	else
+	{
+		while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+		{
+
+			SetConsoleTextAttribute(hConsole, GREEN);
+			BOT(board);
+
+			SetConsoleTextAttribute(hConsole, YELLOW);
+			PrintBoard(board, hConsole);
+
+			// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
+			if (EndGame(board, player_won))
+				break;
+
+			// Bot that will play against player
+			SetConsoleTextAttribute(hConsole, GREEN);
+			PutChip(board, PLAYERCHIP);
+
+			clrscr(); // clears console screen
+
+		}
 	}
 }
 
@@ -132,7 +127,7 @@ void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole)
 {
 	SetConsoleTextAttribute(hConsole, RED);
 	// Column indicators
-	cout << " 1 " << " 2 " << " 3 " << " 4 " << " 5 " << " 6 " << " 7 \n";
+	cout << " 1  2  3  4  5  6  7 \n";
 
 	SetConsoleTextAttribute(hConsole, BLUE);
 	for (int i = 0; i < 6; i++)
@@ -211,13 +206,13 @@ void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused f
 		BOTAI(board, column_pick);
 	}
 
-	cout << endl;
+	//cout << endl;
 
 	column_pick--; // index starts at 0
 
 	for (int i = MAX_ROW - 1; i >= 0; i--)
 	{
-		if (board[i][column_pick] == ' ')
+		if (board[i][column_pick] == BLANKSPACE)
 		{
 			board[i][column_pick] = chip;
 			break;
@@ -230,7 +225,9 @@ void BOTAI(char board[][MAX_COL], int &column_pick)
 {
 	do
 	{
-		column_pick = 1; // Create function that would return the column_pick using an algorithm
+		bool player_won = false; 
+
+		column_pick = Minimax(board, 4, true, ); // Create function that would return the column_pick using an algorithm
 
 	} while(isColumnFull(board, column_pick));
 
@@ -240,6 +237,49 @@ void BOTAI(char board[][MAX_COL], int &column_pick)
 void BOT(char board[][MAX_COL])
 {
 	PutChip(board, BOTCHIP, false);
+}
+
+bool isTermNode(const char board[][MAX_COL], bool player_won)
+{
+	// returns a leaf node/terminal node
+	return (EndGame(board, player_won) || EndGame(board, player_won) /* add if board is full */);
+}
+
+int Minimax(char board[][MAX_COL], int depth, bool MaximizingPlayer, bool player_won)
+{
+	bool isTerm = isTermNode(board, player_won);
+	if (depth == 0 || isTerm /* add if board is full */)
+	{
+		if (isTerm)
+		{
+			if (EndGame(board, player_won))
+				return INFINITY;
+			else if (EndGame(board, player_won))
+				return -INFINITY;
+			else
+				return 0;
+		}
+		else
+		{
+			int column_pick = 0; 
+			BOTAI(board, column_pick);
+			return column_pick;
+		}
+		
+		if (MaximizingPlayer)
+		{
+			int value = -INFINITY; 
+
+			int i = 0;
+			
+			while(isColumnFull())
+
+		}
+
+	}
+
+
+	return 0;
 }
 
 // TODO return by referrence if the player wins or bot wins
@@ -255,14 +295,14 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 
 	// Why does this work for decremeting, but when incrementing it does not count the others [ ][ ][ ][O][O][O][O]
 
-	for (int row = MAX_ROW - 1; row >= 0; row--) // TODO used to be just 7 and not 7-1
+	for (int row = MAX_ROW - 1; row >= 0; row--) 
 	{
 		for (int col = MAX_COL - 1; col >= 0; col--)
 		{
 			if (board[row][col] == PLAYERCHIP)
 				row_Ochipcount++;
 
-			else if (board[row][col] == BOTCHIP || board[row][col] == ' ')
+			else if (board[row][col] == BOTCHIP || board[row][col] == BLANKSPACE)
 			{
 				if (row_Ochipcount >= 4)
 				{
@@ -276,7 +316,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 			if (board[row][col] == BOTCHIP)
 				row_0chipcount++;
 
-			else if (board[row][col] == PLAYERCHIP || board[row][col] == ' ')
+			else if (board[row][col] == PLAYERCHIP || board[row][col] == BLANKSPACE)
 			{
 				if (row_0chipcount >= 4)
 				{
@@ -298,7 +338,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 			if (board[row][col] == PLAYERCHIP)
 				row_Ochipcount++;
 
-			else if (board[row][col] == BOTCHIP || board[row][col] == ' ')
+			else if (board[row][col] == BOTCHIP || board[row][col] == BLANKSPACE)
 			{
 				if (row_Ochipcount >= 4)
 				{
@@ -312,7 +352,7 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 			if (board[row][col] == BOTCHIP)
 				row_0chipcount++;
 
-			else if (board[row][col] == PLAYERCHIP || board[row][col] == ' ')
+			else if (board[row][col] == PLAYERCHIP || board[row][col] == BLANKSPACE)
 			{
 				if (row_0chipcount >= 4)
 				{
@@ -427,6 +467,19 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 	return false;
 }
 
+bool isBoardFull(const char board[][MAX_COL])
+{
+	for (int i = 0; i < MAX_ROW; i++)
+	{
+		for (int j = 0; j < MAX_COL; j++)
+		{
+			if (board[i][j] == BLANKSPACE)
+				return false;
+		}
+	}
+	return true;
+}
+
 bool isColumnFull(const char board[][MAX_COL], int column_pick)
 {
 	int count = 0;
@@ -435,7 +488,7 @@ bool isColumnFull(const char board[][MAX_COL], int column_pick)
 
 	for (int i = 0; i < 6; i++)
 	{
-		if (board[i][column_pick] != ' ')
+		if (board[i][column_pick] != BLANKSPACE)
 		{
 			count++; 
 		}
