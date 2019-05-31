@@ -33,6 +33,8 @@ void BOTAI(char board[][MAX_COL], int &column_pick);
 
 bool isColumnFull(const char board[][MAX_COL], int column_pick);
 
+int Minimax(const char board[][MAX_COL]);
+
 void clrscr();
 
 void fillA(char a[MAX_ROW][MAX_COL], char ch);
@@ -184,7 +186,7 @@ void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole)
 
 void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused for the bot
 {
-	int column_pick = rand() % 7 + 1;
+	int column_pick = 0;
 
 	if (isPlayer)
 	{
@@ -213,7 +215,7 @@ void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused f
 
 	column_pick--; // index starts at 0
 
-	for (int i = 5; i >= 0; i--)
+	for (int i = MAX_ROW - 1; i >= 0; i--)
 	{
 		if (board[i][column_pick] == ' ')
 		{
@@ -226,13 +228,11 @@ void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused f
 
 void BOTAI(char board[][MAX_COL], int &column_pick)
 {
-	//while (isColumnFull(board, column_pick))
-	//{
-	//	column_pick = rand() % MAX_COL + 1;
-	//}
+	do
+	{
+		column_pick = 1; // Create function that would return the column_pick using an algorithm
 
-
-
+	} while(isColumnFull(board, column_pick));
 
 	//cout << "Bot chooses column " << column_pick << endl;
 }
