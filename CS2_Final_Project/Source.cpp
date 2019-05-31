@@ -105,29 +105,60 @@ void DeclareWinner(const HANDLE &hConsole, bool player_won)
 
 void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
 {
-	while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+
+	// rand range = 0 to 1; if % 2 + 1, then 1 to 2
+	bool chance = rand() % 2; // Switching starting player
+
+	if (chance)
 	{
-		SetConsoleTextAttribute(hConsole, YELLOW);
-		PrintBoard(board, hConsole);
+		while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+		{
+			SetConsoleTextAttribute(hConsole, YELLOW);
+			PrintBoard(board, hConsole);
 
-		SetConsoleTextAttribute(hConsole, GREEN);
-		PutChip(board, PLAYERCHIP);
+			SetConsoleTextAttribute(hConsole, GREEN);
+			PutChip(board, PLAYERCHIP);
 
-		SetConsoleTextAttribute(hConsole, YELLOW);
-		PrintBoard(board, hConsole);
+			SetConsoleTextAttribute(hConsole, YELLOW);
+			PrintBoard(board, hConsole);
 
-		// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
-		if (EndGame(board, player_won))
-			break;
+			// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
+			if (EndGame(board, player_won))
+				break;
 
-		// Bot that will play against player
-		SetConsoleTextAttribute(hConsole, GREEN);
-		BOT(board);
+			// Bot that will play against player
+			SetConsoleTextAttribute(hConsole, GREEN);
+			BOT(board);
 
-		clrscr(); // clears console screen
+			clrscr(); // clears console screen
 
+		}
+	}
+	else
+	{
+		while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+		{
+
+			SetConsoleTextAttribute(hConsole, GREEN);
+			BOT(board);
+
+			SetConsoleTextAttribute(hConsole, YELLOW);
+			PrintBoard(board, hConsole);
+
+			// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
+			if (EndGame(board, player_won))
+				break;
+
+			// Bot that will play against player
+			SetConsoleTextAttribute(hConsole, GREEN);
+			PutChip(board, PLAYERCHIP);
+
+			clrscr(); // clears console screen
+
+		}
 	}
 }
+
 
 void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole)
 {
@@ -212,7 +243,7 @@ void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused f
 		BOTAI(board, column_pick);
 	}
 
-	cout << endl;
+	//cout << endl;
 
 	column_pick--; // index starts at 0
 
