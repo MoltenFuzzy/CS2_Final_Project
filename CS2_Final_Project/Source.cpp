@@ -3,7 +3,7 @@ Name: Kent Phan
 */
 
 #include <iostream>
-#include <windows.h>   // WinApi header
+#include <windows.h> 
 #include <iomanip>
 #include <cstdlib>
 #include <string>
@@ -13,10 +13,6 @@ Name: Kent Phan
 #include "Connect4.h"
 
 using namespace std;   
-
-// TODO add coin flip for who goes first
-// TODO change the board to 2d char array
-
 
 int main()
 {
@@ -28,27 +24,24 @@ int main()
 	// you can loop k higher to see more color choices
 	// pick the colorattribute k you want
 
-	// TODO change board size to const
 	do
 	{
 		clrscr(); // To clear the screen at the beginning of each game
 
 		char board[MAX_ROW][MAX_COL] = {};
 
-		fillA(board, BLANKSPACE);
-
-		bool player_won;
+		fillA(board, EMPTY);
 
 		// While it is not end of game, continue looping.
 		// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
 
 		// TODO: add difficulty selection for AI, this will correspond to the depth/ how far the AI will look down the tree
 
-		StartGame(board, player_won, hConsole);
+		StartGame(board, hConsole);
 
 		clrscr();
 
-		DeclareWinner(hConsole, player_won);
+		DeclareWinner(board, hConsole);
 
 		PrintBoard(board, hConsole);
 
@@ -59,24 +52,23 @@ int main()
 	return 0;
 }
 
-void DeclareWinner(const HANDLE &hConsole, bool player_won)
+void DeclareWinner(const char board[][MAX_COL], HANDLE &hConsole)
 {
 	SetConsoleTextAttribute(hConsole, GREEN);
-	if (player_won)
-		cout << setw(17) << setfill(BLANKSPACE) << "You won!\n\n";
-	else
-		cout << setw(17) << setfill(BLANKSPACE) << "You lost!\n\n";
+	if (EndGame(board, PLAYERCHIP))
+		cout << setw(17) << setfill(EMPTY) << "You won!\n\n";
+	else if (EndGame(board, BOTCHIP))
+		cout << setw(17) << setfill(EMPTY) << "You lost!\n\n";
 }
 
-void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
+void StartGame(char board[][MAX_COL], HANDLE &hConsole)
 {
-
 	// rand range = 0 to 1; if % 2 + 1, then 1 to 2
 	bool chance = rand() % 2; // Switching starting player
 
-	if (chance)
+	if (false/*chance*/)
 	{
-		while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+		while (!(EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
 		{
 			SetConsoleTextAttribute(hConsole, YELLOW);
 			PrintBoard(board, hConsole);
@@ -88,7 +80,7 @@ void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
 			PrintBoard(board, hConsole);
 
 			// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
-			if (EndGame(board, player_won))
+			if (EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))
 				break;
 
 			// Bot that will play against player
@@ -101,7 +93,7 @@ void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
 	}
 	else
 	{
-		while (!EndGame(board, player_won)) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
+		while (!(EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))) // TODO create bool function that defines when the game is over. Ex. Once 4 chips are connected
 		{
 
 			SetConsoleTextAttribute(hConsole, GREEN);
@@ -111,7 +103,7 @@ void StartGame(char board[MAX_ROW][MAX_COL], bool &player_won, HANDLE &hConsole)
 			PrintBoard(board, hConsole);
 
 			// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
-			if (EndGame(board, player_won))
+			if (EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))
 				break;
 
 			// Bot that will play against player
@@ -131,9 +123,9 @@ void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole)
 	cout << " 1  2  3  4  5  6  7 \n";
 
 	SetConsoleTextAttribute(hConsole, BLUE);
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < MAX_ROW; i++)
 	{
-		for (int j = 0; j < 7; j++)
+		for (int j = 0; j < MAX_COL; j++)
 		{
 			if (j == 6)
 			{
@@ -180,11 +172,11 @@ void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole)
 
 // TODO May need another character for the chip for the bot. 
 
-void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused for the bot
+void PutChip(char board[][MAX_COL], char chip)
 {
 	int column_pick = 0;
 
-	if (isPlayer)
+	if (chip == PLAYERCHIP)
 	{
 		cout << "Which column would you like? (1-7): ";
 		cin >> column_pick;
@@ -200,45 +192,30 @@ void PutChip(char board[][MAX_COL], char chip, bool isPlayer) // May be reused f
 			cout << "Which column would you like? (1-7): ";
 			cin >> column_pick;
 		}
+		column_pick--;
 	}
 	else
 	{
 		// Want to loop until the column picked is not full 
-		BOTAI(board, column_pick);
+		do
+		{
+			// pick best column will already return a valid column(1-7)
+			column_pick = PickBestCol(board, BOTCHIP);
+		} while (isColumnFull(board, column_pick));
+		//column_pick = rand() % 7 + 1;
 	}
 
 	//cout << endl;
 
-	column_pick--; // index starts at 0
+	//column_pick--; // index starts at 0
 
-	for (int i = MAX_ROW - 1; i >= 0; i--)
-	{
-		if (board[i][column_pick] == BLANKSPACE)
-		{
-			board[i][column_pick] = chip;
-			break;
-		}
-	}
+	DropChip(board, column_pick, chip);
 
-}
-
-void BOTAI(char board[][MAX_COL], int &column_pick)
-{
-	do
-	{
-
-		//column_pick = Minimax(board, 4, true, ); // Create function that would return the column_pick using an algorithm
-
-		column_pick = BestCol(board);
-
-	} while(isColumnFull(board, column_pick));
-
-	//cout << "Bot chooses column " << column_pick << endl;
 }
 
 void BOT(char board[][MAX_COL])
 {
-	PutChip(board, BOTCHIP, false);
+	PutChip(board, BOTCHIP);
 }
 
 bool isTermNode(const char board[][MAX_COL], bool player_won)
@@ -247,196 +224,236 @@ bool isTermNode(const char board[][MAX_COL], bool player_won)
 	return (EndGame(board, player_won) || EndGame(board, player_won) /* add if board is full */);
 }
 
-int BestCol(const char board[][MAX_COL])
+vector<int> GetValidCols(const char board[][MAX_COL])
 {
-	vector<int> scores_v(7);
+	vector<int> valid_cols;
+	for (int col = 0; col < MAX_COL; col++)
+	{
+		if (IsValidXY(board, col))
+		{
+			valid_cols.push_back(col);
+		}
+	}
+	return valid_cols;
+}
 
-	if (board[MAX_ROW - 1][3] == BLANKSPACE)
-		return 4; 
+int score_col(const char board[][MAX_COL], char chip)
+{
+	// Horizontal scoring
+	int score = 0;
+	for (int row = MAX_ROW - 1; row >= 0; row--)
+	{
+		vector<char> row_v;
+		for (int col = 0; col < MAX_COL; col++) 
+		{
+			row_v.push_back(board[row][col]);
+			// Subtracting the max amount of cols and the amount of connected chips/pieces to get 3 which keeps it from going out of bounds
+		}
+
+		vector<char> window; 
+		for (int i = 0; i < row_v.size() - 3; i++)
+		{
+			for (int j = i; j < 4 + i ; j++)
+			{
+				window.push_back(row_v.at(j));
+			}
+			int count_chip = CountChar(window, chip);
+			int count_empty = CountChar(window, EMPTY);
+
+			if (count_chip == 4)
+				score += 2000;
+			else if (count_chip == 3 || count_empty == 1)
+				score += 20;
+
+			window.clear();
+			window.resize(0);
+		}
+
+		row_v.clear();
+		row_v.resize(0);
+	}
+
+	return score;
+}
+
+int PickBestCol(char board[][MAX_COL], char chip)
+{
+	vector<int> valid_cols = GetValidCols(board);
+
+	int best_score = 0;
+	int best_col = rand() % 7 + 1;
 
 
-	// Add score algorithm +2 +4 +1000 etc
+	while (isColumnFull(board, best_col))
+	{
+		best_col = rand() % 7 + 1;
+	}
 
+	for (int col = 1; col <= valid_cols.size(); col++)
+	{
+		char temp_board[MAX_ROW][MAX_COL] = { 0 };
+		CopyArray(board, temp_board, MAX_ROW, MAX_COL);
+		DropChip(temp_board, col, chip);
+		int score = score_col(temp_board, chip);
+		if (score > best_score)
+		{
+			best_score = score; 
+			best_col = col;
+		}
+	}
+
+	return best_col;
 
 	// Returns largest element's index
 	// This works
-	int max_index = 0;
 
-	for (int i = 0; i < scores_v.size(); i++)
-	{ 
-		if (scores_v.at(i) > scores_v.at(max_index))
-		{
-			max_index = i;
-		}
-	}
+	//int max_index = 0;
 
-	return max_index + 1; // Turns index into the column 0-6 to 1-7
+	//for (int i = 0; i < scores_v.size(); i++)
+	//{ 
+	//	if (scores_v.at(i) > scores_v.at(max_index))
+	//	{
+	//		max_index = i;
+	//	}
+	//}
+
+	//return max_index + 1; // Turns index into the column 0-6 to 1-7
 }
 
-int Minimax(char board[][MAX_COL], int depth, bool MaximizingPlayer, bool player_won)
+void DropChip(char board[][MAX_COL], int col, char chip)
 {
-	bool isTerm = isTermNode(board, player_won);
-
-	if (depth == 0 || isTerm /* add if board is full */)
+	for (int i = MAX_ROW - 1; i >= 0; i--)
 	{
-		if (isTerm)
+		if (board[i][col] == EMPTY)
 		{
-			if (EndGame(board, player_won))
-				return INFINITY;
-			else if (EndGame(board, player_won))
-				return -INFINITY;
-			else
-				return 0;
+			board[i][col] = chip;
+			break;
 		}
-		else
-		{
-			int column_pick = 0; 
-			BOTAI(board, column_pick);
-			return column_pick;
-		}
-		
-		if (MaximizingPlayer)
-		{
-			int value = -INFINITY; 
-
-			int i = 0;
-
-		}
-
 	}
-
-
-	return 0;
 }
+
+//int Minimax(char board[][MAX_COL], int depth, bool MaximizingPlayer, bool player_won)
+//{
+//	bool isTerm = isTermNode(board, player_won);
+//
+//	if (depth == 0 || isTerm /* add if board is full */)
+//	{
+//		if (isTerm)
+//		{
+//			if (EndGame(board, player_won))
+//				return INFINITY;
+//			else if (EndGame(board, player_won))
+//				return -INFINITY;
+//			else
+//				return 0;
+//		}
+//		else
+//		{
+//			int column_pick = 0; 
+//			BOTAI(board, column_pick);
+//			return column_pick;
+//		}
+//		
+//		if (MaximizingPlayer)
+//		{
+//			int value = -INFINITY; 
+//
+//			int i = 0;
+//
+//		}
+//
+//	}
+//
+//
+//	return 0;
+//}
 
 // TODO return by referrence if the player wins or bot wins
 // HACK BUG: registers win even if its not 4 in a row // (I think this has been fixed)
 // TODO imporve the loop as running multiple loops is not efficient
-bool EndGame(const char board[][MAX_COL], bool& player_win)
+bool EndGame(const char board[][MAX_COL], char piece)
 {
-	int row_Ochipcount = 0;
-	int row_0chipcount = 0;
+	char opp_piece; 
+
+	if (piece == PLAYERCHIP)
+		opp_piece = BOTCHIP;
+	else
+		opp_piece = PLAYERCHIP;
+
+	int piece_count = 0;
+
+	const int WINCOUNT = 4;
 
 	// Counts Horizontal Chips for each player
-	// HACK make sure they are next to each other, not just there are 4 in the row/column
-
-	// Why does this work for decremeting, but when incrementing it does not count the others [ ][ ][ ][O][O][O][O]
 
 	for (int row = MAX_ROW - 1; row >= 0; row--) 
 	{
 		for (int col = MAX_COL - 1; col >= 0; col--)
 		{
-			if (board[row][col] == PLAYERCHIP)
-				row_Ochipcount++;
+			if (board[row][col] == piece)
+				piece_count++;
 
-			else if (board[row][col] == BOTCHIP || board[row][col] == BLANKSPACE)
+			else if (board[row][col] == opp_piece || board[row][col] == EMPTY)
 			{
-				if (row_Ochipcount >= 4)
+				if (piece_count >= WINCOUNT)
 				{
-					player_win = true;
+					//player_win = true;
+					cout << " Hortizontal Win for " << piece << endl;
 					return true; // Someone has won, return true
 				}
 				else 
-					row_Ochipcount = 0;
-			}
-
-			if (board[row][col] == BOTCHIP)
-				row_0chipcount++;
-
-			else if (board[row][col] == PLAYERCHIP || board[row][col] == BLANKSPACE)
-			{
-				if (row_0chipcount >= 4)
-				{
-					player_win = false;
-					return true; // Someone has won, return true
-				}
-				else
-					row_0chipcount = 0;
+					piece_count = 0;
 			}
 		}
 	}
 
 	// Counts Vertical Chips for each player
 
-	for (int col = MAX_COL - 1; col >= 0; col--)
+	for (int col = 0; col < MAX_COL; col++)
 	{
 		for (int row = MAX_ROW - 1; row >= 0; row--)
 		{
-			if (board[row][col] == PLAYERCHIP)
-				row_Ochipcount++;
+			if (board[row][col] == piece)
+				piece_count++;
 
-			else if (board[row][col] == BOTCHIP || board[row][col] == BLANKSPACE)
+			else if (board[row][col] == opp_piece || board[row][col] == EMPTY)
 			{
-				if (row_Ochipcount >= 4)
+				if (piece_count >= WINCOUNT)
 				{
-					player_win = true;
+					cout << "  Vertical Win for " << piece << endl;
 					return true; // Someone has won, return true
 				}
-				else
-					row_Ochipcount = 0;
-			}
-
-			if (board[row][col] == BOTCHIP)
-				row_0chipcount++;
-
-			else if (board[row][col] == PLAYERCHIP || board[row][col] == BLANKSPACE)
-			{
-				if (row_0chipcount >= 4)
-				{
-					player_win = false;
-					return true; // Someone has won, return true
-				}
-				else
-					row_0chipcount = 0;
+				piece_count = 0;
 			}
 		}
 	}
 
+	const int MAX_BOUND = 4; 
+	const int ROW_BOUND = 2; 
+	const int COL_BOUND = 3;
 	// Counts Diagonal Chips for each player
 	// From left side
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
+		piece_count = 0;
 		for (int col = MAX_COL - 1; col >= 0; col--)
 		{
-			if (row > 2 && col >= 3)
+			// Cannot be less than ROWBOUND(2) & COLBOUND(3) BC when it is passed those, a connect 4 in a row is no longer possible
+			if (row > ROW_BOUND && col >= COL_BOUND)
 			{
-				if (board[row][col] == PLAYERCHIP)
-					row_Ochipcount++;
-				if (board[row - 1][col - 1] == PLAYERCHIP)
-					row_Ochipcount++;
-				if (board[row - 2][col - 2] == PLAYERCHIP)
-					row_Ochipcount++;
-				if (board[row - 3][col - 3] == PLAYERCHIP)
-					row_Ochipcount++;
-				if (row_Ochipcount >= 4)
+				for (int i = 0; i < MAX_BOUND; i++)
+					if (board[row - i][col - i] == PLAYERCHIP)
+						piece_count++;
+			
+				if (piece_count >= WINCOUNT)
 				{
-					player_win = true;
-					cout << "Won diagonally " << row_Ochipcount << endl;
+					//player_win = true;
+					cout << "  Diagonal Win " << piece << endl;
 					return true; // Someone has won, return true
 				}
 				else
-				{
-					row_Ochipcount = 0;
-				}
-
-				if (board[row][col] == BOTCHIP)
-					row_0chipcount++;
-				if (board[row - 1][col - 1] == BOTCHIP)
-					row_0chipcount++;
-				if (board[row - 2][col - 2] == BOTCHIP)
-					row_0chipcount++;
-				if (board[row - 3][col - 3] == BOTCHIP)
-					row_0chipcount++;
-				if (row_0chipcount >= 4)
-				{
-					player_win = false;
-					cout << "Lost diagonally " << row_0chipcount << endl;
-					return true; // Someone has won, return true
-				}
-				else
-				{
-					row_0chipcount = 0;
-				}
+					piece_count = 0;
+				
 			}
 		}
 	}
@@ -447,46 +464,22 @@ bool EndGame(const char board[][MAX_COL], bool& player_win)
 	{
 		for (int col = 0; col < MAX_COL; col++)
 		{
-			if (row > 2 && col <= 3)
+			// Cannot be less than ROWBOUND(2) & COLBOUND(3) BC when it is passed those, a connect 4 in a row is no longer possible
+			if (row > ROW_BOUND && col <= COL_BOUND)
 			{
-				// TODO: Could I clean this up?
-				if (board[row][col] == PLAYERCHIP)
-					row_Ochipcount++;
-				if (board[row - 1][col + 1] == PLAYERCHIP)
-					row_Ochipcount++;
-				if (board[row - 2][col + 2] == PLAYERCHIP)
-					row_Ochipcount++;
-				if (board[row - 3][col + 3] == PLAYERCHIP)
-					row_Ochipcount++;
-				if (row_Ochipcount >= 4)
-				{
-					player_win = true;
-					cout << "Won diagonally " << row_Ochipcount << endl;
-					return true; // Someone has won, return true
-				}
-				else
-				{
-					row_Ochipcount = 0;
-				}
+				for (int i = 0; i < MAX_BOUND; i++)
+					if (board[row - i][col + i] == piece)
+						piece_count++;
 
-				if (board[row][col] == BOTCHIP)
-					row_0chipcount++;
-				if (board[row - 1][col + 1] == BOTCHIP)
-					row_0chipcount++;
-				if (board[row - 2][col + 2] == BOTCHIP)
-					row_0chipcount++;
-				if (board[row - 3][col + 3] == BOTCHIP)
-					row_0chipcount++;
-				if (row_0chipcount >= 4)
+				if (piece_count >= WINCOUNT)
 				{
-					player_win = false;
-					cout << "Lost diagonally " << row_0chipcount << endl;
+					//player_win = true;
+					cout << "  Diagonal Win " << piece << endl;
 					return true; // Someone has won, return true
 				}
 				else
-				{
-					row_0chipcount = 0;
-				}
+					piece_count = 0;
+			
 			}
 		}
 	}
@@ -500,7 +493,7 @@ bool isBoardFull(const char board[][MAX_COL])
 	{
 		for (int j = 0; j < MAX_COL; j++)
 		{
-			if (board[i][j] == BLANKSPACE)
+			if (board[i][j] == EMPTY)
 				return false;
 		}
 	}
@@ -513,15 +506,15 @@ bool isColumnFull(const char board[][MAX_COL], int column_pick)
 	
 	column_pick--;
 
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < MAX_ROW; i++)
 	{
-		if (board[i][column_pick] != BLANKSPACE)
+		if (board[i][column_pick] != EMPTY)
 		{
 			count++; 
 		}
 	}
 
-	if (count >= 6) // if the count is 6(row) is greater it should return true and ask for another pick
+	if (count >= MAX_ROW) // if the count is 6(row) is greater it should return true and ask for another pick
 		return true;
 	else
 		return false;
@@ -582,4 +575,34 @@ void clrscr()
 
 	/* Move the cursor home */
 	SetConsoleCursorPosition(hStdOut, homeCoords);
+}
+
+bool IsValidXY(const char board[][MAX_COL], int col)
+{
+	return board[MAX_ROW - 1][col] == EMPTY;
+}
+
+int get_next_open_row(const char board[][MAX_COL], int col)
+{
+	for (int row = 0; row < MAX_ROW; row++)
+		if (board[row][col] == EMPTY)
+			return row;
+}
+
+void CopyArray(const char a1[][MAX_COL], char a2[][MAX_COL], int row_size, int col_size)
+{
+	for (int i = 0; i < row_size; i++)
+		for(int j = 0; j < col_size; j++)
+			a2[i][j] = a1[i][j];
+}
+
+int CountChar(vector<char> v, char chip)
+{
+	int count = 0;
+
+	for (int i = 0; i < v.size(); i++)
+		if (v.at(i) == chip)
+			count++;
+
+	return count;
 }
