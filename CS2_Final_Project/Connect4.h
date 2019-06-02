@@ -53,6 +53,8 @@ std::vector<int> GetValidCols(const char board[][MAX_COL]);
 
 int score_col(const char board[][MAX_COL], char chip);
 
+int ScoreTheBoard(std::vector<char> window, char chip);
+
 int get_next_open_row(const char board[][MAX_COL], int col);
 
 bool IsValidXY(const char board[][MAX_COL], int col);
