@@ -355,7 +355,7 @@ int ScoreTheBoard(vector<char> window, char chip)
 	if (count_chip == 4)
 		score += 100;
 	else if (count_chip == 3 && count_empty == 1)
-		score += 5;
+		score += 4;
 	else if (count_chip == 2 && count_empty == 2)
 		score += 2;
 
@@ -472,6 +472,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 	const int COL_BOUND = 3;
 	// Counts Diagonal Chips for each player
 	// From left side
+	// TODO: HAS A BUG 
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
 		for (int col = MAX_COL - 1; col >= 0; col--)
@@ -486,7 +487,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 				if (piece_count >= WINCOUNT)
 				{
 					//player_win = true;
-					cout << "  Diagonal Win "; 
+					cout << "  Left Diagonal Win "; 
 					if (piece == PLAYERCHIP)
 						cout << "Player" << endl;
 					else
@@ -516,7 +517,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 				if (piece_count >= WINCOUNT)
 				{
 					//player_win = true;
-					cout << "  Diagonal Win " << piece << endl;
+					cout << "   Right Diagonal Win " << piece << endl;
 					if (piece == PLAYERCHIP)
 						cout << "Player" << endl;
 					else
