@@ -1,6 +1,8 @@
-/*
-Name: Kent Phan
-*/
+//Final Project
+//Author: Kent Phan
+//Email Address: kphan9@go.pasadena.edu
+//Description: Connect 4 With AI
+//Last Changed: 6/2/2019
 
 #include <iostream>
 #include <windows.h> 
@@ -92,7 +94,7 @@ void StartGame(char board[][MAX_COL], HANDLE &hConsole)
 		{
 			PrintBoard(board, hConsole);
 			BOT(board);
-			Sleep(200);
+			Sleep(250);
 			clrscr();
 			PrintBoard(board, hConsole);
 			clrscr();
@@ -242,13 +244,13 @@ int score_col(const char board[][MAX_COL], char chip)
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
 		vector<char> row_v;
-		for (int col = 0; col < MAX_COL; col++) 
+		for (int col = 0; col < MAX_COL; col++)
 		{
 			row_v.push_back(board[row][col]);
 			// Subtracting the max amount of cols and the amount of connected chips/pieces to get 3 which keeps it from going out of bounds
 		}
 
-		vector<char> window; 
+		vector<char> window;
 		for (int i = 0; i < row_v.size() - 3; i++)
 		{
 			for (int j = i; j < i + 4; j++)
@@ -292,6 +294,46 @@ int score_col(const char board[][MAX_COL], char chip)
 
 		col_v.clear();
 		col_v.resize(0);
+	}
+
+	{
+		// Diagonal from Right Scoring
+		vector<char> window;
+		for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
+		{
+			vector<char> window;
+			for (int col = 0; col < MAX_COL - 3; col++)
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					window.push_back(board[row + i][col + i]);
+				}
+
+				score += ScoreTheBoard(window, chip);
+			}
+		}
+		window.clear();
+		window.resize(0);
+	}
+
+	{
+		// Diagonal from Left Scoring
+		vector<char> window;
+		for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
+		{
+			vector<char> window;
+			for (int col = 0; col < MAX_COL - 3; col++)
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					window.push_back(board[row + 3 - i][col - i]);
+				}
+
+				score += ScoreTheBoard(window, chip);
+			}
+		}
+		window.clear();
+		window.resize(0);
 	}
 
 	return score;
