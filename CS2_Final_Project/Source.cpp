@@ -29,6 +29,14 @@ int main()
 		clrscr(); // To clear the screen at the beginning of each game
 
 		char board[MAX_ROW][MAX_COL] = {};
+		//{
+		//	{' ',' ',' ',' ',' ',' ',' '},
+		//	{' ',' ',' ',' ',' ',' ',' '},
+		//	{' ',' ',' ',' ',' ',' ',' '},
+		//	{' ',' ',' ',' ',' ',' ',' '},
+		//	{' ',' ',' ',' ',' ',' ',' '},
+		//	{' ',' ',' ',' ',' ',' ',' '},
+		//};
 
 		fillA(board, EMPTY);
 
@@ -215,12 +223,6 @@ void PutChip(char board[][MAX_COL], char chip)
 void BOT(char board[][MAX_COL])
 {
 	PutChip(board, BOTCHIP);
-}
-
-bool isTermNode(const char board[][MAX_COL], bool player_won)
-{
-	// returns a leaf node/terminal node
-	return (EndGame(board, player_won) || EndGame(board, player_won) /* add if board is full */);
 }
 
 vector<int> GetValidCols(const char board[][MAX_COL])
@@ -542,44 +544,6 @@ bool RunAgain()
 	return (tolower(ans[0]) == 'y');
 }
 
-// Taken from http://www.cplusplus.com/forum/articles/10515/
-void clrscr()
-{
-	HANDLE                     hStdOut;
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	DWORD                      count;
-	DWORD                      cellCount;
-	COORD                      homeCoords = { 0, 0 };
-
-	hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (hStdOut == INVALID_HANDLE_VALUE) return;
-
-	/* Get the number of cells in the current buffer */
-	if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) return;
-	cellCount = csbi.dwSize.X *csbi.dwSize.Y;
-
-	/* Fill the entire buffer with spaces */
-	if (!FillConsoleOutputCharacter(
-		hStdOut,
-		(TCHAR) ' ',
-		cellCount,
-		homeCoords,
-		&count
-	)) return;
-
-	/* Fill the entire buffer with the current colors and attributes */
-	if (!FillConsoleOutputAttribute(
-		hStdOut,
-		csbi.wAttributes,
-		cellCount,
-		homeCoords,
-		&count
-	)) return;
-
-	/* Move the cursor home */
-	SetConsoleCursorPosition(hStdOut, homeCoords);
-}
-
 bool IsValidXY(const char board[][MAX_COL], int col)
 {
 	return board[MAX_ROW - 1][col] == EMPTY;
@@ -618,4 +582,42 @@ int CountChar(vector<char> v, char chip)
 	}
 
 	return count;
+}
+
+// Taken from http://www.cplusplus.com/forum/articles/10515/
+void clrscr()
+{
+	HANDLE                     hStdOut;
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	DWORD                      count;
+	DWORD                      cellCount;
+	COORD                      homeCoords = { 0, 0 };
+
+	hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hStdOut == INVALID_HANDLE_VALUE) return;
+
+	/* Get the number of cells in the current buffer */
+	if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) return;
+	cellCount = csbi.dwSize.X *csbi.dwSize.Y;
+
+	/* Fill the entire buffer with spaces */
+	if (!FillConsoleOutputCharacter(
+		hStdOut,
+		(TCHAR) ' ',
+		cellCount,
+		homeCoords,
+		&count
+	)) return;
+
+	/* Fill the entire buffer with the current colors and attributes */
+	if (!FillConsoleOutputAttribute(
+		hStdOut,
+		csbi.wAttributes,
+		cellCount,
+		homeCoords,
+		&count
+	)) return;
+
+	/* Move the cursor home */
+	SetConsoleCursorPosition(hStdOut, homeCoords);
 }
