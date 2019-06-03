@@ -26,7 +26,6 @@ int main()
 
 	do
 	{
-		clrscr(); // To clear the screen at the beginning of each game
 
 		char board[MAX_ROW][MAX_COL] = {};
 		//{
@@ -71,56 +70,56 @@ void DeclareWinner(const char board[][MAX_COL], HANDLE &hConsole)
 
 void StartGame(char board[][MAX_COL], HANDLE &hConsole)
 {
+
+	clrscr(); // If player runs again it will clear the screen at the beginning always
+
 	// rand range = 0 to 1; if % 2 + 1, then 1 to 2
 	bool chance = rand() % 2; // Switching starting player
 
-	if (chance)
+	while (!(EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP)))
 	{
-		while (!(EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))) 
-		{
-			SetConsoleTextAttribute(hConsole, YELLOW);
-			PrintBoard(board, hConsole);
 
+		if (chance) // Player goes 1st
+		{
+			PrintBoard(board, hConsole);
 			SetConsoleTextAttribute(hConsole, GREEN);
 			PutChip(board, PLAYERCHIP);
-
-			SetConsoleTextAttribute(hConsole, YELLOW);
+			clrscr();
 			PrintBoard(board, hConsole);
-
-			// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
-			if (EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))
-				break;
-
-			// Bot that will play against player
-			SetConsoleTextAttribute(hConsole, GREEN);
-			BOT(board);
-
-			clrscr(); // clears console screen
-
+			clrscr();
 		}
-	}
-	else
-	{
-		while (!(EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))) 
+		else  // Bot goes 1st
 		{
-
-			SetConsoleTextAttribute(hConsole, GREEN);
-
-			BOT(board);
-
-			SetConsoleTextAttribute(hConsole, YELLOW);
 			PrintBoard(board, hConsole);
+			BOT(board);
+			Sleep(200);
+			clrscr();
+			PrintBoard(board, hConsole);
+			clrscr();
+		}
 
-			// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
-			if (EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))
-				break;
+		// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
+		if (EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))
+			break;
 
-			// Bot that will play against player
+		
+		if (chance) // Bot goes 2nd
+		{
+			PrintBoard(board, hConsole);
+			Sleep(200);
+			BOT(board);
+			clrscr();
+			PrintBoard(board, hConsole);
+			clrscr();
+		}
+		else // Player goes 2nd
+		{
+			PrintBoard(board, hConsole);
 			SetConsoleTextAttribute(hConsole, GREEN);
 			PutChip(board, PLAYERCHIP);
-
-			clrscr(); // clears console screen
-
+			clrscr();
+			PrintBoard(board, hConsole);
+			clrscr();
 		}
 	}
 }
@@ -199,7 +198,6 @@ void PutChip(char board[][MAX_COL], char chip)
 			cout << "Which column would you like? (1-7): ";
 			cin >> column_pick;
 		}
-		column_pick--;
 	}
 	else
 	{
@@ -213,8 +211,6 @@ void PutChip(char board[][MAX_COL], char chip)
 	}
 
 	//cout << endl;
-
-	//column_pick--; // index starts at 0
 
 	DropChip(board, column_pick, chip);
 
@@ -332,13 +328,14 @@ int PickBestCol(char board[][MAX_COL], char chip)
 	vector<int> valid_cols = GetValidCols(board);
 
 	int best_score = 0;
-	int best_col = 3;
+	int best_col = 4;
 
 	for (int col = 1; col <= valid_cols.size(); col++)
 	{
 		char temp_board[MAX_ROW][MAX_COL] = {};
 		fillA(temp_board, EMPTY);
 		CopyArray(board, temp_board, MAX_ROW, MAX_COL);
+		// DropChip will change the index from 1-7 to 0-6
 		DropChip(temp_board, col, chip);
 		int score = score_col(temp_board, chip);
 		if (score > best_score)
@@ -353,6 +350,7 @@ int PickBestCol(char board[][MAX_COL], char chip)
 
 void DropChip(char board[][MAX_COL], int col, char chip)
 {
+	col--;
 	for (int i = MAX_ROW - 1; i >= 0; i--)
 	{
 		if (board[i][col] == EMPTY)
