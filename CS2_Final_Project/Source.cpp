@@ -347,12 +347,12 @@ int ScoreTheBoard(vector<char> window, char chip)
 	if (count_chip == 4)
 		score += 100;
 	else if (count_chip == 3 && count_empty == 1)
-		score += 4;
+		score += 10;
 	else if (count_chip == 2 && count_empty == 2)
-		score += 2;
+		score += 5;
 
 	if (count_opp_chip == 3 && count_empty == 1)
-		score -= 4;
+		score -= 60;
 
 	return score;
 }
@@ -361,24 +361,26 @@ int PickBestCol(char board[][MAX_COL], char chip)
 {
 	vector<int> valid_cols = GetValidCols(board);
 
-	int best_score = 0;
+	int best_score = -1000;
 	int best_col = rand() % 7 + 1;
 
+	// TODO: Find a better way to have bot prefer center column 
 	// Prevents infinite loop
-	if(!isColumnFull(board, 4))
+	if (!isColumnFull(board, 4))
 		best_col = 4;
 
 	// Selects a col based off the best score of the each column
-	for (int col = 1; col <= valid_cols.size(); col++)
+	for (int col = 1; col <= 7; col++)
 	{
-		char temp_board[MAX_ROW][MAX_COL] = {};
-		fillA(temp_board, EMPTY);
+		char temp_board[MAX_ROW][MAX_COL];
 		CopyArray(board, temp_board, MAX_ROW, MAX_COL);
 		// DropChip will change the index from 1-7 to 0-6
 		DropChip(temp_board, col, chip); // TODO: May be a problem with checking the temp board
 		int score = score_col(temp_board, chip);
 
 		// if the best score is on a column that is full it will set the score to 0
+
+		// Prevents infinite loop
 		if (isColumnFull(board, col))
 			score = 0;
 
