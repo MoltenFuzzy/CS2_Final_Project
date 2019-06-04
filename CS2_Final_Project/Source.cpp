@@ -29,32 +29,35 @@ int main()
 	do
 	{
 
-		char board[MAX_ROW][MAX_COL] = {};
-		//{
-		//	{' ',' ',' ',' ',' ',' ',' '},
-		//	{' ',' ',' ',' ',' ',' ',' '},
-		//	{' ',' ',' ',' ',' ',' ',' '},
-		//	{' ',' ',' ',' ',' ',' ',' '},
-		//	{' ',' ',' ',' ',' ',' ',' '},
-		//	{' ',' ',' ',' ',' ',' ',' '},
-		//};
+		char board[MAX_ROW][MAX_COL] =
+		{
+			{' ',' ',' ',' ',' ',' ',' '},
+			{' ',' ',' ',' ',' ',' ',' '},
+			{' ',' ',' ',' ',' ',' ',' '},
+			{' ',' ',' ',' ',' ',' ',' '},
+			{' ',' ',' ',' ',' ',' ',' '},
+			{' ',' ',' ',' ',' ',' ',' '},
+		};
 
-		fillA(board, EMPTY);
+		//fillA(board, EMPTY);
+
+		if (EndGame(board, BOTCHIP))
+			cout << "Win!\n";
 
 		// While it is not end of game, continue looping.
 		// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
 
 		// TODO: add difficulty selection for AI, this will correspond to the depth/ how far the AI will look down the tree
 
-		StartGame(board, hConsole);
+		//StartGame(board, hConsole);
 
-		clrscr();
+		//clrscr();
 
-		DeclareWinner(board, hConsole);
+		//DeclareWinner(board, hConsole);
 
-		PrintBoard(board, hConsole);
+		//PrintBoard(board, hConsole);
 
-		SetConsoleTextAttribute(hConsole, WHITE);
+		//SetConsoleTextAttribute(hConsole, WHITE);
 
 	} while (RunAgain());
 
@@ -236,9 +239,11 @@ vector<int> GetValidCols(const char board[][MAX_COL])
 	return valid_cols;
 }
 
-// TODO: Fix issue with column filling up. Specifically column 2. 
+// TODO: Fix issue with bot repeatedly attempting to choose a full column because the score is highest
 int score_col(const char board[][MAX_COL], char chip)
 {
+	const int window_size = 4; // [0 0 0 0] checks if it is a connect 4 by sorting the chip sequences into windows and evaluating them.
+
 	// Horizontal scoring
 	int score = 0;
 	for (int row = MAX_ROW - 1; row >= 0; row--)
@@ -250,18 +255,14 @@ int score_col(const char board[][MAX_COL], char chip)
 			// Subtracting the max amount of cols and the amount of connected chips/pieces to get 3 which keeps it from going out of bounds
 		}
 
-		vector<char> window;
 		for (int i = 0; i < row_v.size() - 3; i++)
 		{
+			vector<char> window;
 			for (int j = i; j < i + 4; j++)
 			{
 				window.push_back(row_v.at(j));
 			}
-
 			score += ScoreTheBoard(window, chip);
-
-			window.clear();
-			window.resize(0);
 		}
 
 		row_v.clear();
@@ -278,22 +279,16 @@ int score_col(const char board[][MAX_COL], char chip)
 			// Subtracting the max amount of cols and the amount of connected chips/pieces to get 3 which keeps it from going out of bounds
 		}
 
-		vector<char> window;
 		for (int i = 0; i < col_v.size() - 3; i++)
 		{
+			vector<char> window;
 			for (int j = i; j < i + 4; j++)
 			{
 				window.push_back(col_v.at(j));
 			}
 
 			score += ScoreTheBoard(window, chip);
-
-			window.clear();
-			window.resize(0);
 		}
-
-		col_v.clear();
-		col_v.resize(0);
 	}
 
 	{
@@ -312,8 +307,6 @@ int score_col(const char board[][MAX_COL], char chip)
 				score += ScoreTheBoard(window, chip);
 			}
 		}
-		window.clear();
-		window.resize(0);
 	}
 
 	{
@@ -326,19 +319,19 @@ int score_col(const char board[][MAX_COL], char chip)
 			{
 				for (int i = 0; i < 4; i++)
 				{
+					// + 3 because row starts from 0 to 6 and this prevents it from going out of bounds diagonally
 					window.push_back(board[row + 3 - i][col - i]);
 				}
 
 				score += ScoreTheBoard(window, chip);
 			}
 		}
-		window.clear();
-		window.resize(0);
 	}
 
 	return score;
 }
 
+// TODO: add if the column if full set score = 0 for that column
 int ScoreTheBoard(vector<char> window, char chip)
 {
 	char opp_chip = PLAYERCHIP;
@@ -370,16 +363,26 @@ int PickBestCol(char board[][MAX_COL], char chip)
 	vector<int> valid_cols = GetValidCols(board);
 
 	int best_score = 0;
-	int best_col = 4;
+	int best_col = rand() % 7 + 1;
 
+	// Prevents infinite loop
+	if(!isColumnFull(board, 4))
+		best_col = 4;
+
+	// Selects a col based off the best score of the each column
 	for (int col = 1; col <= valid_cols.size(); col++)
 	{
 		char temp_board[MAX_ROW][MAX_COL] = {};
 		fillA(temp_board, EMPTY);
 		CopyArray(board, temp_board, MAX_ROW, MAX_COL);
 		// DropChip will change the index from 1-7 to 0-6
-		DropChip(temp_board, col, chip);
+		DropChip(temp_board, col, chip); // TODO: May be a problem with checking the temp board
 		int score = score_col(temp_board, chip);
+
+		// if the best score is on a column that is full it will set the score to 0
+		if (isColumnFull(board, col))
+			score = 0;
+
 		if (score > best_score)
 		{
 			best_score = score; 
@@ -471,7 +474,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 	const int ROW_BOUND = 2; 
 	const int COL_BOUND = 3;
 	// Counts Diagonal Chips for each player
-	// From left side
+	// From left side (Negative Slope)
 	// TODO: HAS A BUG 
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
@@ -481,7 +484,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 			if (row > ROW_BOUND && col >= COL_BOUND)
 			{
 				for (int i = 0; i < MAX_BOUND; i++)
-					if (board[row - i][col - i] == PLAYERCHIP)
+					if (board[row + i][col - i] == PLAYERCHIP)
 						piece_count++;
 			
 				if (piece_count >= WINCOUNT)
@@ -501,8 +504,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 		piece_count = 0;
 	}
 
-	// From Right side
-	// TODO: There is a bug in the diagonal count 
+	// From Right side (Positive Slope)
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
 		for (int col = 0; col < MAX_COL; col++)
