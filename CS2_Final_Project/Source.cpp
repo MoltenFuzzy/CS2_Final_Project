@@ -29,17 +29,18 @@ int main()
 	do
 	{
 
-		char board[MAX_ROW][MAX_COL] =
-		{
-			{' ',' ',' ',' ',' ',' ',' '},
-			{' ',' ',' ',' ',' ',' ',' '},
-			{' ',' ',' ',' ',' ',' ',' '},
-			{' ',' ',' ',' ',' ',' ',' '},
-			{' ',' ',' ',' ',' ',' ',' '},
-			{' ',' ',' ',' ',' ',' ',' '},
-		};
+		char board[MAX_ROW][MAX_COL] = {};
+			// for testing connect 4 in a rows
+		//{
+		//	{' ','0',' ',' ',' ',' ',' '},
+		//	{' ',' ','0',' ',' ',' ',' '},
+		//	{' ',' ',' ','0',' ',' ',' '},
+		//	{' ',' ',' ',' ','0',' ',' '},
+		//	{' ',' ',' ',' ',' ',' ',' '},
+		//	{' ',' ',' ',' ',' ',' ',' '},
+		//};
 
-		//fillA(board, EMPTY);
+		fillA(board, EMPTY);
 
 		if (EndGame(board, BOTCHIP))
 			cout << "Win!\n";
@@ -47,17 +48,15 @@ int main()
 		// While it is not end of game, continue looping.
 		// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
 
-		// TODO: add difficulty selection for AI, this will correspond to the depth/ how far the AI will look down the tree
+		StartGame(board, hConsole);
 
-		//StartGame(board, hConsole);
+		clrscr();
 
-		//clrscr();
+		DeclareWinner(board, hConsole);
 
-		//DeclareWinner(board, hConsole);
+		PrintBoard(board, hConsole);
 
-		//PrintBoard(board, hConsole);
-
-		//SetConsoleTextAttribute(hConsole, WHITE);
+		SetConsoleTextAttribute(hConsole, WHITE);
 
 	} while (RunAgain());
 
@@ -406,8 +405,6 @@ void DropChip(char board[][MAX_COL], int col, char chip)
 	}
 }
 
-
-// TODO: Fix bug that sometimes counts the pieces incorrectly
 bool EndGame(const char board[][MAX_COL], char piece)
 {
 	char opp_piece; 
@@ -475,7 +472,6 @@ bool EndGame(const char board[][MAX_COL], char piece)
 	const int COL_BOUND = 3;
 	// Counts Diagonal Chips for each player
 	// From left side (Negative Slope)
-	// TODO: HAS A BUG 
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
 		for (int col = MAX_COL - 1; col >= 0; col--)
@@ -484,7 +480,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 			if (row > ROW_BOUND && col >= COL_BOUND)
 			{
 				for (int i = 0; i < MAX_BOUND; i++)
-					if (board[row + i][col - i] == PLAYERCHIP)
+					if (board[row - i][col - i] == piece)
 						piece_count++;
 			
 				if (piece_count >= WINCOUNT)
