@@ -23,92 +23,54 @@ const char PLAYERCHIP = 'O';
 const char BOTCHIP = '0';
 const char EMPTY = ' ';
 
-//Input: 
-//Processing: 
-//Output:
 void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole);
 
-//Input: 
-//Processing: 
-//Output:
+// Starts the game loop
 void StartGame(char board[][MAX_COL], HANDLE &hConsole);
 
-//Input: 
-//Processing: 
-//Output:
+// Prints who won, lost, or tied
 void DeclareWinner(const char board[][MAX_COL], HANDLE &hConsole);
 
-//Input: 
-//Processing: 
-//Output:
+// Checks if a player has won, connected 4 chips
 bool EndGame(const char board[][MAX_COL], char piece);
 
-//Input: 
-//Processing: 
-//Output:
+// AI
 void BOT(char board[][MAX_COL]);
 
-//Input: 
-//Processing: 
-//Output:
-void PutChip(char board[][MAX_COL], char chip);
+// Ask for column from the user or if it is the bot's chip calls the AI to select the best column
+void GameInput(char board[][MAX_COL], char chip);
 
-//Input: 
-//Processing: 
-//Output:
+// Checks if the column is full
 bool isColumnFull(const char board[][MAX_COL], int column_pick);
 
-//Input: 
-//Processing: 
-//Output:
+// Scores each column using a hypothetical temp board to allow the bot to see what is the best column choice.
+// Picks the best score which corresponds to the column and returns it. 
 int PickBestCol(char board[][MAX_COL], char chip);
 
-//Input: 
-//Processing: 
-//Output:
+// Sets the bottom most empty row of a column to a the chip (char)
 void DropChip(char temp_board[][MAX_COL], int col, char chip);
 
-//Input: 
-//Processing: 
-//Output:
+// Checks if the board is full, used to determine a tie
 bool isBoardFull(const char board[][MAX_COL]);
 
-//Input: 
-//Processing: 
-//Output:
+// Clears the screen
 void clrscr();
 
-//Input: 
-//Processing: 
-//Output:
+// Fills an array with a character
 void fillA(char a[MAX_ROW][MAX_COL], char ch);
 
-//Input: 
-//Processing: 
-//Output:
+// Scores the column by taking each column and taking 4 cells and scoring them based off what is the best outcome
+// Checks hortizonal, vertical, and diagonals to returns the score for the column
 int score_col(const char board[][MAX_COL], char chip);
 
-//Input: 
-//Processing: 
-//Output:
+//
 int ScoreTheBoard(std::vector<char> window, char chip);
 
-//Input: 
-//Processing: 
-//Output:
-int get_next_open_row(const char board[][MAX_COL], int col);
-
-//Input: 
-//Processing: 
-//Output:
+// Counts the amount of occurances of a chip(char) in a vector
 int CountChar(std::vector<char> v, char chip);
 
-//Input: 
-//Processing: 
-//Output:
+// Creates a copy of an array to a different memory address
 void CopyArray(const char a1[][MAX_COL], char a2[][MAX_COL], int row_size, int col_size);
 
-//Input: 
-//Processing: 
-//Output:
+// Asks if the user wants to play again
 bool RunAgain();

@@ -89,7 +89,7 @@ void StartGame(char board[][MAX_COL], HANDLE &hConsole)
 		{
 			PrintBoard(board, hConsole);
 			SetConsoleTextAttribute(hConsole, GREEN);
-			PutChip(board, PLAYERCHIP);
+			GameInput(board, PLAYERCHIP);
 			clrscr();
 			PrintBoard(board, hConsole);
 			clrscr();
@@ -122,7 +122,7 @@ void StartGame(char board[][MAX_COL], HANDLE &hConsole)
 		{
 			PrintBoard(board, hConsole);
 			SetConsoleTextAttribute(hConsole, GREEN);
-			PutChip(board, PLAYERCHIP);
+			GameInput(board, PLAYERCHIP);
 			clrscr();
 			PrintBoard(board, hConsole);
 			clrscr();
@@ -184,7 +184,7 @@ void PrintBoard(const char board[][MAX_COL], HANDLE& hConsole)
 	cout << endl;
 }
 
-void PutChip(char board[][MAX_COL], char chip)
+void GameInput(char board[][MAX_COL], char chip)
 {
 	int column_pick = 0;
 
@@ -231,10 +231,9 @@ void PutChip(char board[][MAX_COL], char chip)
 
 void BOT(char board[][MAX_COL])
 {
-	PutChip(board, BOTCHIP);
+	GameInput(board, BOTCHIP);
 }
 
-// TODO: Fix issue with bot repeatedly attempting to choose a full column because the score is highest
 int score_col(const char board[][MAX_COL], char chip)
 {
 	const int window_size = 4; // [0 0 0 0] checks if it is a connect 4 by sorting the chip sequences into windows and evaluating them.
@@ -283,42 +282,39 @@ int score_col(const char board[][MAX_COL], char chip)
 		}
 	}
 
+		// Diagonal from Right Scoring(/)
+	for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
 	{
-		// Diagonal from Right Scoring
 		vector<char> window;
-		for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
+		for (int col = 0; col < MAX_COL - 3; col++)
 		{
-			vector<char> window;
-			for (int col = 0; col < MAX_COL - 3; col++)
+			for (int i = 0; i < 4; i++)
 			{
-				for (int i = 0; i < 4; i++)
-				{
-					window.push_back(board[row + i][col + i]);
-				}
-
-				score += ScoreTheBoard(window, chip);
+				window.push_back(board[row + i][col + i]);
 			}
+
+			score += ScoreTheBoard(window, chip);
 		}
 	}
+	
+	// Diagonal from Left Scoring(\)
+	
+	// TODO: FIX THIS
+	//for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
+	//{
+	//	vector<char> window;
+	//	for (int col = 0; col < MAX_COL - 3; col++)
+	//	{
+	//		for (int i = 0; i < 4; i++)
+	//		{
+	//			// + 3 because row starts from 0 to 6 and this prevents it from going out of bounds diagonally
+	//			window.push_back(board[row + 3 - i][col - i]);
+	//		}
 
-	{
-		// Diagonal from Left Scoring
-		vector<char> window;
-		for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
-		{
-			vector<char> window;
-			for (int col = 0; col < MAX_COL - 3; col++)
-			{
-				for (int i = 0; i < 4; i++)
-				{
-					// + 3 because row starts from 0 to 6 and this prevents it from going out of bounds diagonally
-					window.push_back(board[row + 3 - i][col - i]);
-				}
-
-				score += ScoreTheBoard(window, chip);
-			}
-		}
-	}
+	//		score += ScoreTheBoard(window, chip);
+	//	}
+	//}
+	
 
 	const int CENTER_COL = 3;
 
@@ -338,7 +334,6 @@ int score_col(const char board[][MAX_COL], char chip)
 	return score;
 }
 
-// TODO: add if the column if full set score = 0 for that column
 int ScoreTheBoard(vector<char> window, char chip)
 {
 	char opp_chip = PLAYERCHIP;
@@ -352,15 +347,15 @@ int ScoreTheBoard(vector<char> window, char chip)
 
 	int score = 0;
 
-	if (count_chip == 4)
+	if (count_chip == WIN_CONNECT)
 		score += 100;
 	else if (count_chip == 3 && count_empty == 1)
-		score += 10;
+		score += 4;
 	else if (count_chip == 2 && count_empty == 2)
-		score += 5;
+		score += 2;
 
 	if (count_opp_chip == 3 && count_empty == 1)
-		score -= 50;
+		score -= 30;
 
 	return score;
 }
@@ -373,10 +368,11 @@ int PickBestCol(char board[][MAX_COL], char chip)
 	// Selects a col based off the best score of the each column
 	for (int col = 1; col <= MAX_COL; col++)
 	{
+		// Using a temp_board to look at all the possible positions and scoring them to determine which is the best column
 		char temp_board[MAX_ROW][MAX_COL];
 		CopyArray(board, temp_board, MAX_ROW, MAX_COL);
 		// DropChip will change the index from 1-7 to 0-6
-		DropChip(temp_board, col, chip); // TODO: May be a problem with checking the temp board
+		DropChip(temp_board, col, chip);
 		int score = score_col(temp_board, chip);
 
 		// if the best score is on a column that is full it will set the score to 0
@@ -584,13 +580,6 @@ bool RunAgain()
 	cout << endl;
 
 	return (tolower(ans[0]) == 'y');
-}
-
-int get_next_open_row(const char board[][MAX_COL], int col)
-{
-	for (int row = 0; row < MAX_ROW; row++)
-		if (board[row][col] == EMPTY)
-			return row;
 }
 
 void CopyArray(const char a1[][MAX_COL], char a2[][MAX_COL], int row_size, int col_size)
