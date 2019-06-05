@@ -86,11 +86,6 @@ void fillA(char a[MAX_ROW][MAX_COL], char ch);
 //Input: 
 //Processing: 
 //Output:
-std::vector<int> GetValidCols(const char board[][MAX_COL]);
-
-//Input: 
-//Processing: 
-//Output:
 int score_col(const char board[][MAX_COL], char chip);
 
 //Input: 
@@ -102,11 +97,6 @@ int ScoreTheBoard(std::vector<char> window, char chip);
 //Processing: 
 //Output:
 int get_next_open_row(const char board[][MAX_COL], int col);
-
-//Input: 
-//Processing: 
-//Output:
-bool IsValidXY(const char board[][MAX_COL], int col);
 
 //Input: 
 //Processing: 

@@ -70,6 +70,8 @@ void DeclareWinner(const char board[][MAX_COL], HANDLE &hConsole)
 		cout << setw(17) << setfill(EMPTY) << "You won!\n\n";
 	else if (EndGame(board, BOTCHIP))
 		cout << setw(17) << setfill(EMPTY) << "You lost!\n\n";
+	else if (isBoardFull(board))
+		cout << setw(17) << setfill(EMPTY) << "You tied!\n\n";
 }
 
 void StartGame(char board[][MAX_COL], HANDLE &hConsole)
@@ -190,17 +192,24 @@ void PutChip(char board[][MAX_COL], char chip)
 	{
 		cout << "Which column would you like? (1-7): ";
 		cin >> column_pick;
+		cin.clear();
+		cin.ignore();
+
 		while (column_pick > 7 || column_pick < 1)
 		{
 			cout << "\nColumn does not exist!\n\n";
 			cout << "Which column would you like? (1-7): ";
 			cin >> column_pick;
+			cin.clear();
+			cin.ignore();
 		}
 		while (isColumnFull(board, column_pick))
 		{
 			cout << "\nColumn is full!\n\n";
 			cout << "Which column would you like? (1-7): ";
 			cin >> column_pick;
+			cin.clear();
+			cin.ignore();
 		}
 	}
 	else
@@ -223,19 +232,6 @@ void PutChip(char board[][MAX_COL], char chip)
 void BOT(char board[][MAX_COL])
 {
 	PutChip(board, BOTCHIP);
-}
-
-vector<int> GetValidCols(const char board[][MAX_COL])
-{
-	vector<int> valid_cols;
-	for (int col = 0; col < MAX_COL; col++)
-	{
-		if (IsValidXY(board, col))
-		{
-			valid_cols.push_back(col);
-		}
-	}
-	return valid_cols;
 }
 
 // TODO: Fix issue with bot repeatedly attempting to choose a full column because the score is highest
@@ -263,9 +259,6 @@ int score_col(const char board[][MAX_COL], char chip)
 			}
 			score += ScoreTheBoard(window, chip);
 		}
-
-		row_v.clear();
-		row_v.resize(0);
 	}
 
 	// Vertical scoring
@@ -327,6 +320,21 @@ int score_col(const char board[][MAX_COL], char chip)
 		}
 	}
 
+	const int CENTER_COL = 3;
+
+	// Preference Center
+	vector<char> center_v;
+
+	// Stores the enter center column into a vector
+	for (int i = MAX_ROW - 1; i >= 0; i--)
+		center_v.push_back(board[i][CENTER_COL]);
+
+	// Counts the amount of chips that are in the center based on the player's turn
+	int count_center = CountChar(center_v, chip);
+
+	// Multiplies how many chips are in the center column to make the AI favor the center as it is most advantagous
+	score += count_center * MAX_COL; 
+
 	return score;
 }
 
@@ -352,25 +360,18 @@ int ScoreTheBoard(vector<char> window, char chip)
 		score += 5;
 
 	if (count_opp_chip == 3 && count_empty == 1)
-		score -= 60;
+		score -= 50;
 
 	return score;
 }
 
 int PickBestCol(char board[][MAX_COL], char chip)
 {
-	vector<int> valid_cols = GetValidCols(board);
-
 	int best_score = -1000;
-	int best_col = rand() % 7 + 1;
-
-	// TODO: Find a better way to have bot prefer center column 
-	// Prevents infinite loop
-	if (!isColumnFull(board, 4))
-		best_col = 4;
+	int best_col = 0;
 
 	// Selects a col based off the best score of the each column
-	for (int col = 1; col <= 7; col++)
+	for (int col = 1; col <= MAX_COL; col++)
 	{
 		char temp_board[MAX_ROW][MAX_COL];
 		CopyArray(board, temp_board, MAX_ROW, MAX_COL);
@@ -583,11 +584,6 @@ bool RunAgain()
 	cout << endl;
 
 	return (tolower(ans[0]) == 'y');
-}
-
-bool IsValidXY(const char board[][MAX_COL], int col)
-{
-	return board[MAX_ROW - 1][col] == EMPTY;
 }
 
 int get_next_open_row(const char board[][MAX_COL], int col)
