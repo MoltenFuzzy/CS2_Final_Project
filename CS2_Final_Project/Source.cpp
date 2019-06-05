@@ -42,8 +42,8 @@ int main()
 
 		fillA(board, EMPTY);
 
-		if (EndGame(board, BOTCHIP))
-			cout << "Win!\n";
+		/*if (EndGame(board, BOTCHIP))
+			cout << "Win!\n";*/
 
 		// While it is not end of game, continue looping.
 		// Note: EndGame returns true if it counts 4 chips in a row and !EndGame will change it to false, stopping the loop
@@ -105,9 +105,8 @@ void StartGame(char board[][MAX_COL], HANDLE &hConsole)
 		}
 
 		// Added bc if player connects 4 before the bot and then the bot connects 4, Player will lose even though they won first
-		if (EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP))
+		if (EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP) ) // TODO: ADD A TIE 
 			break;
-
 		
 		if (chance) // Bot goes 2nd
 		{
@@ -219,6 +218,7 @@ void GameInput(char board[][MAX_COL], char chip)
 		{
 			// pick best column will already return a valid column(1-7)
 			column_pick = PickBestCol(board, BOTCHIP);
+
 		} while (isColumnFull(board, column_pick));
 		//column_pick = rand() % 7 + 1;
 	}
@@ -236,7 +236,7 @@ void BOT(char board[][MAX_COL])
 
 int score_col(const char board[][MAX_COL], char chip)
 {
-	const int window_size = 4; // [0 0 0 0] checks if it is a connect 4 by sorting the chip sequences into windows and evaluating them.
+	const int WINDOW_SIZE = 4; // [0 0 0 0] checks if it is a connect 4 by sorting the chip sequences into windows and evaluating them.
 
 	// Horizontal scoring
 	int score = 0;
@@ -252,7 +252,7 @@ int score_col(const char board[][MAX_COL], char chip)
 		for (int i = 0; i < row_v.size() - 3; i++)
 		{
 			vector<char> window;
-			for (int j = i; j < i + 4; j++)
+			for (int j = i; j < i + WINDOW_SIZE; j++)
 			{
 				window.push_back(row_v.at(j));
 			}
@@ -273,7 +273,7 @@ int score_col(const char board[][MAX_COL], char chip)
 		for (int i = 0; i < col_v.size() - 3; i++)
 		{
 			vector<char> window;
-			for (int j = i; j < i + 4; j++)
+			for (int j = i; j < i + WINDOW_SIZE; j++)
 			{
 				window.push_back(col_v.at(j));
 			}
@@ -282,13 +282,13 @@ int score_col(const char board[][MAX_COL], char chip)
 		}
 	}
 
-		// Diagonal from Right Scoring(/)
+	// Diagonal from Left Scoring(\)
 	for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
 	{
 		vector<char> window;
 		for (int col = 0; col < MAX_COL - 3; col++)
 		{
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < WINDOW_SIZE; i++)
 			{
 				window.push_back(board[row + i][col + i]);
 			}
@@ -297,23 +297,21 @@ int score_col(const char board[][MAX_COL], char chip)
 		}
 	}
 	
-	// Diagonal from Left Scoring(\)
-	
+	// Diagonal from Right Scoring(/)
 	// TODO: FIX THIS
-	//for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
-	//{
-	//	vector<char> window;
-	//	for (int col = 0; col < MAX_COL - 3; col++)
-	//	{
-	//		for (int i = 0; i < 4; i++)
-	//		{
-	//			// + 3 because row starts from 0 to 6 and this prevents it from going out of bounds diagonally
-	//			window.push_back(board[row + 3 - i][col - i]);
-	//		}
+	for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
+	{
+		vector<char> window;
+		for (int col = 0; col < MAX_COL - 3; col++)
+		{
+			for (int i = 0; i < WINDOW_SIZE; i++)
+			{
+				window.push_back(board[row + i][col - i]);
+			}
 
-	//		score += ScoreTheBoard(window, chip);
-	//	}
-	//}
+			score += ScoreTheBoard(window, chip);
+		}
+	}
 	
 
 	const int CENTER_COL = 3;
@@ -329,13 +327,18 @@ int score_col(const char board[][MAX_COL], char chip)
 	int count_center = CountChar(center_v, chip);
 
 	// Multiplies how many chips are in the center column to make the AI favor the center as it is most advantagous
-	score += count_center * MAX_COL; 
+	score += count_center * 6; 
 
 	return score;
 }
 
 int ScoreTheBoard(vector<char> window, char chip)
 {
+	const int MUST_PUT = 100;
+	const int SHOULD_PUT = 4;
+	const int OKAY_PUT = 2;
+	const int PREVENT_LOSS = 50;
+
 	char opp_chip = PLAYERCHIP;
 
 	if (chip == PLAYERCHIP)
@@ -348,21 +351,23 @@ int ScoreTheBoard(vector<char> window, char chip)
 	int score = 0;
 
 	if (count_chip == WIN_CONNECT)
-		score += 100;
+		score += MUST_PUT;
 	else if (count_chip == 3 && count_empty == 1)
-		score += 4;
+		score += SHOULD_PUT;
 	else if (count_chip == 2 && count_empty == 2)
-		score += 2;
+		score += OKAY_PUT;
 
 	if (count_opp_chip == 3 && count_empty == 1)
-		score -= 30;
+		score -= PREVENT_LOSS;
 
 	return score;
 }
 
 int PickBestCol(char board[][MAX_COL], char chip)
 {
-	int best_score = -1000;
+	// large negative number so that it will be able to block the opponent
+	// Since it will add if it is beneficial and subtract score and will block 
+	int best_score = -500;
 	int best_col = 0;
 
 	// Selects a col based off the best score of the each column
@@ -470,7 +475,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 	const int ROW_BOUND = 2; 
 	const int COL_BOUND = 3;
 	// Counts Diagonal Chips for each player
-	// From left side (Negative Slope)
+	// From left side (Negative Slope \) 
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
 		for (int col = MAX_COL - 1; col >= 0; col--)
@@ -499,7 +504,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 		piece_count = 0;
 	}
 
-	// From Right side (Positive Slope)
+	// From Right side (Positive Slope /)
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
 		for (int col = 0; col < MAX_COL; col++)
