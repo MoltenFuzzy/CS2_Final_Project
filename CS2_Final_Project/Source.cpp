@@ -239,6 +239,7 @@ int score_col(const char board[][MAX_COL], char chip)
 {
 	const int WINDOW_SIZE = 4; // [0 0 0 0] checks if it is a connect 4 by sorting the chip sequences into windows and evaluating them.
 	const int ROW_BOUND = 3; 
+	const int COL_BOUND = 3;
 
 	int score = 0;
 
@@ -256,7 +257,7 @@ int score_col(const char board[][MAX_COL], char chip)
 			// Subtracting the max amount of cols and the amount of connected chips/pieces to get 3 which keeps it from going out of bounds
 		}
 
-		for (int i = 0; i < row_v.size() - 3; i++)
+		for (int i = 0; i < row_v.size() - ROW_BOUND; i++)
 		{
 			vector<char> window;
 			for (int j = i; j < i + WINDOW_SIZE; j++)
@@ -277,7 +278,7 @@ int score_col(const char board[][MAX_COL], char chip)
 			// Subtracting the max amount of cols and the amount of connected chips/pieces to get 3 which keeps it from going out of bounds
 		}
 
-		for (int i = 0; i < col_v.size() - 3; i++)
+		for (int i = 0; i < col_v.size() - ROW_BOUND; i++)
 		{
 			vector<char> window;
 			for (int j = i; j < i + WINDOW_SIZE; j++)
@@ -293,7 +294,7 @@ int score_col(const char board[][MAX_COL], char chip)
 	// Subtracting 3 to set the bound for diagonal to prevent going out of bounds
 	for (int row = (MAX_ROW - 1) - ROW_BOUND; row >= 0; row--)
 	{
-		for (int col = 0; col <= MAX_COL - 3; col++)
+		for (int col = 0; col <= MAX_COL - ; col++)
 		{
 			vector<char> window;
 			for (int i = 0; i < WINDOW_SIZE; i++)
@@ -307,7 +308,7 @@ int score_col(const char board[][MAX_COL], char chip)
 	// Diagonal from Right Scoring(/)
 	for (int row = (MAX_ROW - 1) - ROW_BOUND; row >= 0; row--)
 	{
-		for (int col = 0; col <= MAX_COL - 3; col++)
+		for (int col = 0; col <= MAX_COL - COL_BOUND; col++)
 		{
 			vector<char> window;
 			for (int i = 0; i < WINDOW_SIZE; i++)
@@ -392,7 +393,7 @@ int PickBestCol(char board[][MAX_COL], char chip)
 		// if the best score is on a column that is full it will set the score to 0
 
 		// Prevents infinite loop
-		if (isColumnFull(board, col)) // Maybe add || isColumnFull(temp_board,col) if there is another bug
+		if (isColumnFull(board, col) || isColumnFull(temp_board, col)) // Maybe add || isColumnFull(temp_board,col) if there is another bug
 			score = 0;
 
 		if (score > best_score)
