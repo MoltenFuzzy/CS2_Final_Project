@@ -294,7 +294,7 @@ int score_col(const char board[][MAX_COL], char chip)
 	// Subtracting 3 to set the bound for diagonal to prevent going out of bounds
 	for (int row = (MAX_ROW - 1) - ROW_BOUND; row >= 0; row--)
 	{
-		for (int col = 0; col <= MAX_COL - ; col++)
+		for (int col = 0; col <= MAX_COL - COL_BOUND; col++)
 		{
 			vector<char> window;
 			for (int i = 0; i < WINDOW_SIZE; i++)
