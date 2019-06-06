@@ -1,5 +1,5 @@
 # CS2_Final_Project
-Final Project for C002 JAMAL 
+Final Project for CS002 Jamal Ashraf
 
 Connect 4 with an AI
 
