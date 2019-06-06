@@ -242,6 +242,9 @@ int score_col(const char board[][MAX_COL], char chip)
 
 	int score = 0;
 
+	// NOTE: Taking windows allows for bounds checking for columns
+	//while rows must be altered by subtracting 3 to prevent going out of bounds
+
 	// Horizontal scoring
 
 	for (int row = MAX_ROW - 1; row >= 0; row--)
@@ -336,11 +339,11 @@ int score_col(const char board[][MAX_COL], char chip)
 
 int ScoreWindow(vector<char> window, char chip)
 {
-	// Can change these values to better the return
-	const int MUST_PUT = 200;
+	// Can be tweaked to return better or worse results
+	const int MUST_PUT = 100;
 	const int SHOULD_PUT = 10;
 	const int OKAY_PUT = 5;
-	const int PREVENT_LOSS = 100;
+	const int PREVENT_LOSS = 50;
 
 	char opp_chip = PLAYERCHIP;
 
@@ -369,6 +372,8 @@ int ScoreWindow(vector<char> window, char chip)
 int PickBestCol(char board[][MAX_COL], char chip)
 {
 	// large negative number so that it will be able to block the opponent
+	// if best score = 0 and and bot needs to block it would 0 - 50 and score would be -50 compared to best score 0
+	// this would cause a bug and would not block the player
 	// Since it will add if it is beneficial and subtract score and will block 
 	int best_score = -1000;
 	int best_col = 0;
