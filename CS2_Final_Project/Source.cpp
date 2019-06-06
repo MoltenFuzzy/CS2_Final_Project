@@ -30,7 +30,7 @@ int main()
 	{
 
 		char board[MAX_ROW][MAX_COL] = {};
-			// for testing connect 4 in a rows
+		// for testing connect 4 in a rows
 		//{
 		//	{' ','0',' ',' ',' ',' ',' '},
 		//	{' ',' ','0',' ',' ',' ',' '},
@@ -82,6 +82,7 @@ void StartGame(char board[][MAX_COL], HANDLE &hConsole)
 	// rand range = 0 to 1; if % 2 + 1, then 1 to 2
 	bool chance = rand() % 2; // Switching starting player
 
+	// EndGame includes a if the board is full and no one has won
 	while (!(EndGame(board, PLAYERCHIP) || EndGame(board, BOTCHIP)))
 	{
 
@@ -97,8 +98,8 @@ void StartGame(char board[][MAX_COL], HANDLE &hConsole)
 		else  // Bot goes 1st
 		{
 			PrintBoard(board, hConsole);
+			Sleep(300);
 			BOT(board);
-			Sleep(250);
 			clrscr();
 			PrintBoard(board, hConsole);
 			clrscr();
@@ -111,7 +112,7 @@ void StartGame(char board[][MAX_COL], HANDLE &hConsole)
 		if (chance) // Bot goes 2nd
 		{
 			PrintBoard(board, hConsole);
-			Sleep(200);
+			Sleep(300);
 			BOT(board);
 			clrscr();
 			PrintBoard(board, hConsole);
@@ -217,7 +218,7 @@ void GameInput(char board[][MAX_COL], char chip)
 		do
 		{
 			// pick best column will already return a valid column(1-7)
-			column_pick = PickBestCol(board, BOTCHIP);
+			column_pick = PickBestCol(board, chip);
 
 		} while (isColumnFull(board, column_pick));
 		//column_pick = rand() % 7 + 1;
@@ -237,9 +238,12 @@ void BOT(char board[][MAX_COL])
 int score_col(const char board[][MAX_COL], char chip)
 {
 	const int WINDOW_SIZE = 4; // [0 0 0 0] checks if it is a connect 4 by sorting the chip sequences into windows and evaluating them.
+	const int ROW_BOUND = 3; 
+
+	int score = 0;
 
 	// Horizontal scoring
-	int score = 0;
+
 	for (int row = MAX_ROW - 1; row >= 0; row--)
 	{
 		vector<char> row_v;
@@ -256,7 +260,7 @@ int score_col(const char board[][MAX_COL], char chip)
 			{
 				window.push_back(row_v.at(j));
 			}
-			score += ScoreTheBoard(window, chip);
+			score += ScoreWindow(window, chip);
 		}
 	}
 
@@ -278,41 +282,39 @@ int score_col(const char board[][MAX_COL], char chip)
 				window.push_back(col_v.at(j));
 			}
 
-			score += ScoreTheBoard(window, chip);
+			score += ScoreWindow(window, chip);
 		}
 	}
 
 	// Diagonal from Left Scoring(\)
-	for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
+	for (int row = (MAX_ROW - 1) - ROW_BOUND; row >= 0; row--)
 	{
-		vector<char> window;
-		for (int col = 0; col < MAX_COL - 3; col++)
+		for (int col = 0; col <= MAX_COL - 3; col++)
 		{
+			vector<char> window;
 			for (int i = 0; i < WINDOW_SIZE; i++)
 			{
 				window.push_back(board[row + i][col + i]);
 			}
-
-			score += ScoreTheBoard(window, chip);
+			score += ScoreWindow(window, chip);
 		}
 	}
 	
 	// Diagonal from Right Scoring(/)
-	// TODO: FIX THIS
-	for (int row = (MAX_ROW - 1) - 3; row >= 0; row--)
+	for (int row = (MAX_ROW - 1) - ROW_BOUND; row >= 0; row--)
 	{
-		vector<char> window;
-		for (int col = 0; col < MAX_COL - 3; col++)
+		for (int col = 0; col <= MAX_COL - 3; col++)
 		{
+			vector<char> window;
 			for (int i = 0; i < WINDOW_SIZE; i++)
 			{
-				window.push_back(board[row + i][col - i]);
+				// TODO: remove 3 and replace it with the window bound
+				// Adding a row bound(3) bc it is str
+				window.push_back(board[row - i + ROW_BOUND][col + i]);
 			}
-
-			score += ScoreTheBoard(window, chip);
+			score += ScoreWindow(window, chip);
 		}
 	}
-	
 
 	const int CENTER_COL = 3;
 
@@ -332,12 +334,13 @@ int score_col(const char board[][MAX_COL], char chip)
 	return score;
 }
 
-int ScoreTheBoard(vector<char> window, char chip)
+int ScoreWindow(vector<char> window, char chip)
 {
-	const int MUST_PUT = 100;
-	const int SHOULD_PUT = 4;
-	const int OKAY_PUT = 2;
-	const int PREVENT_LOSS = 50;
+	// Can change these values to better the return
+	const int MUST_PUT = 200;
+	const int SHOULD_PUT = 10;
+	const int OKAY_PUT = 5;
+	const int PREVENT_LOSS = 100;
 
 	char opp_chip = PLAYERCHIP;
 
@@ -367,7 +370,7 @@ int PickBestCol(char board[][MAX_COL], char chip)
 {
 	// large negative number so that it will be able to block the opponent
 	// Since it will add if it is beneficial and subtract score and will block 
-	int best_score = -500;
+	int best_score = -1000;
 	int best_col = 0;
 
 	// Selects a col based off the best score of the each column
@@ -383,7 +386,7 @@ int PickBestCol(char board[][MAX_COL], char chip)
 		// if the best score is on a column that is full it will set the score to 0
 
 		// Prevents infinite loop
-		if (isColumnFull(board, col))
+		if (isColumnFull(temp_board, col))
 			score = 0;
 
 		if (score > best_score)
@@ -471,7 +474,6 @@ bool EndGame(const char board[][MAX_COL], char piece)
 		piece_count = 0;
 	}
 
-	const int MAX_BOUND = 4; 
 	const int ROW_BOUND = 2; 
 	const int COL_BOUND = 3;
 	// Counts Diagonal Chips for each player
@@ -483,7 +485,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 			// Cannot be less than ROWBOUND(2) & COLBOUND(3) BC when it is passed those, a connect 4 in a row is no longer possible
 			if (row > ROW_BOUND && col >= COL_BOUND)
 			{
-				for (int i = 0; i < MAX_BOUND; i++)
+				for (int i = 0; i < WINCOUNT; i++)
 					if (board[row - i][col - i] == piece)
 						piece_count++;
 			
@@ -512,7 +514,7 @@ bool EndGame(const char board[][MAX_COL], char piece)
 			// Cannot be less than ROWBOUND(2) & COLBOUND(3) BC when it is passed those, a connect 4 in a row is no longer possible
 			if (row > ROW_BOUND && col <= COL_BOUND)
 			{
-				for (int i = 0; i < MAX_BOUND; i++)
+				for (int i = 0; i < WINCOUNT; i++)
 					if (board[row - i][col + i] == piece)
 						piece_count++;
 
@@ -531,6 +533,9 @@ bool EndGame(const char board[][MAX_COL], char piece)
 		}
 		piece_count = 0;
 	}
+
+	if (isBoardFull(board))
+		return true; 
 
 	return false;
 }
@@ -577,7 +582,6 @@ void fillA(char a[MAX_ROW][MAX_COL], char ch)
 
 bool RunAgain()
 {
-	cin.ignore();
 	cout << "Would you like to play again?(Y/N): ";
 	string ans; 
 	getline(cin, ans);
@@ -597,10 +601,6 @@ void CopyArray(const char a1[][MAX_COL], char a2[][MAX_COL], int row_size, int c
 int CountChar(vector<char> v, char chip)
 {
 	// Assuming this is used by the AI
-	char opp_chip = PLAYERCHIP;
-
-	if (chip == PLAYERCHIP)
-		opp_chip = BOTCHIP;
 
 	int count = 0;
 
@@ -608,8 +608,6 @@ int CountChar(vector<char> v, char chip)
 	{
 		if (v.at(i) == chip)
 			count++;
-		else if (v.at(i) == opp_chip)
-			count = 0;
 	}
 
 	return count;

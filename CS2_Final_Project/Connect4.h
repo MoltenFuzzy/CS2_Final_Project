@@ -1,14 +1,5 @@
 #pragma once
 
-#include <iostream>
-#include <windows.h>   // winapi header
-#include <iomanip>
-#include <cstdlib>
-#include <string>
-#include <cmath>
-#include <ctime> 
-#include <vector>
-
 const int MAX_ROW = 6;
 const int MAX_COL = 7;
 const int WIN_CONNECT = 4; 
@@ -63,8 +54,8 @@ void fillA(char a[MAX_ROW][MAX_COL], char ch);
 // Checks hortizonal, vertical, and diagonals to returns the score for the column
 int score_col(const char board[][MAX_COL], char chip);
 
-//
-int ScoreTheBoard(std::vector<char> window, char chip);
+// Scores the a vector of 4 chips
+int ScoreWindow(std::vector<char> window, char chip);
 
 // Counts the amount of occurances of a chip(char) in a vector
 int CountChar(std::vector<char> v, char chip);
