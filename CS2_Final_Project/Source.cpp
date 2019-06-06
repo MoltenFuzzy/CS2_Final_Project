@@ -290,6 +290,7 @@ int score_col(const char board[][MAX_COL], char chip)
 	}
 
 	// Diagonal from Left Scoring(\)
+	// Subtracting 3 to set the bound for diagonal to prevent going out of bounds
 	for (int row = (MAX_ROW - 1) - ROW_BOUND; row >= 0; row--)
 	{
 		for (int col = 0; col <= MAX_COL - 3; col++)
@@ -391,7 +392,7 @@ int PickBestCol(char board[][MAX_COL], char chip)
 		// if the best score is on a column that is full it will set the score to 0
 
 		// Prevents infinite loop
-		if (isColumnFull(temp_board, col) || isColumnFull(board, col))
+		if (isColumnFull(board, col)) // Maybe add || isColumnFull(temp_board,col) if there is another bug
 			score = 0;
 
 		if (score > best_score)
