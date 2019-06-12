@@ -1,9 +1,5 @@
 # CS2_Final_Project
 
-<h1>  
-  This repository will be set to private on Monday, June 10th 2019 at 1PM. 
-</h1>
-
 Final Project for CS002 Jamal Ashraf
 
 Connect 4 with an AI
