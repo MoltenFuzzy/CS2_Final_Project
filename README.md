@@ -4,6 +4,11 @@ Final Project for CS002 Jamal Ashraf
 
 Connect 4 with an AI
 
+![image](https://user-images.githubusercontent.com/46156230/145219926-8ea0e3e7-0718-455a-9502-e12550ab4b03.png)
+![image](https://user-images.githubusercontent.com/46156230/145220021-ed2070f5-79cb-4f22-be54-326b5af5a437.png)
+![image](https://user-images.githubusercontent.com/46156230/145220084-72a6274f-64a4-49fe-89eb-2beb3dc5c85c.png)
+![image](https://user-images.githubusercontent.com/46156230/145220253-99c31dbe-6f73-49fa-aad0-c859d0a1befc.png)
+
 <h2>  
   How to Play
 </h2>
